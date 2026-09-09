@@ -1,0 +1,93 @@
+svg-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  :host-context(.small-size) & svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  :host-context(.selectable) & {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 65px;
+    height: 55px;
+    margin: auto 5px;
+    cursor: pointer;
+
+    svg {
+      width: 45px !important;
+      height: 45px !important;
+      opacity: 0.4;
+      transition: all 200ms linear;
+    }
+
+    &:hover svg {
+      opacity: 1;
+      width: 55px !important;
+      height: 55px !important;
+      transition: all 200ms linear;
+      animation: shake 1s infinite;
+    }
+  }
+
+  &.fully-learned {
+    g > polygon,
+    g > path {
+      fill: var(--color-green) !important;
+    }
+  }
+
+  &.star {
+    g > polygon {
+      fill: var(--color-secondary-highlight) !important;
+    }
+  }
+
+  &.half-star {
+    g > path {
+      fill: var(--color-primary) !important;
+      stroke: var(--color-primary) !important;
+    }
+  }
+
+  &.not-started {
+    g > path {
+      fill: var(--color-error) !important;
+      stroke: var(--color-error) !important;
+    }
+  }
+
+  > svg {
+    display: flex;
+
+    &.small-size {
+      width: 30px;
+      height: 30px;
+    }
+  }
+
+  &.filterable {
+    padding-bottom: 5px;
+    border-bottom: 5px solid var(--surface-ground);
+    opacity: 0.4;
+
+    &:hover svg {
+      width: calc(var(--svg-width-large) + 10px) !important;
+      height: calc(var(--svg-height-large) + 10px) !important;
+      transition: all 200ms linear;
+      animation: shake 1s infinite;
+    }
+
+    svg {
+      transition: all 200ms linear;
+    }
+
+    &.filtered {
+      border-bottom: 5px var(--color-font-icons) dotted;
+      opacity: 1;
+    }
+  }
+}

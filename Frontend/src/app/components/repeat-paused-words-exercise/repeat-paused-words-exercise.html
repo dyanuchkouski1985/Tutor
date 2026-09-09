@@ -1,0 +1,155 @@
+<div class="exercise-container">
+  <div class="progressbar-container">
+    <p-progressBar [value]="(100 * questionIndex) / tasks.length">
+      <ng-template pTemplate="content" let-value>
+        <span>{{ questionIndex }}/{{ tasks.length }}</span>
+      </ng-template>
+    </p-progressBar>
+    <div class="answers-history">
+      @for (isCorrectAnswer of answersHistory; track isCorrectAnswer) {
+        <span>
+          <svg-icon
+            [class.completed]="isCorrectAnswer"
+            [src]="'../../../assets/images/svg/' + (isCorrectAnswer ? 'check.svg' : 'cross.svg')"
+            class="svg-animation-grow"
+          ></svg-icon>
+        </span>
+      }
+    </div>
+  </div>
+
+  <form (ngSubmit)="onNext()">
+    @if (questionIndex < tasks.length || showAnswer) {
+      <div class="desk">
+        @if (showAnswer || (questionIndex < tasks.length && !showAnswer)) {
+          <div>
+            <div class="word-container">
+              <app-star [wordLearningProgress]="tasks[questionIndex].wordLearningProgress"></app-star>
+              <div [innerHTML]="tasks[questionIndex].translations.join('; ')"></div>
+              @if (tasks[questionIndex].reverted) {
+                <div class="play-icon-container">
+                  <svg-icon
+                    src="../../../assets/images/svg/play.svg"
+                    class="play-icon pointer svg-icon-size-medium"
+                    (click)="onPlayWordPronunciation(tasks[questionIndex].wordId)"
+                  ></svg-icon>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        @if (showAnswer) {
+          <div>
+            <div class="answer-container">
+              <div class="word-container">
+                <div [innerHTML]="tasks[questionIndex].word" class="correct-answer-value"></div>
+                <div class="play-icon-container">
+                  @if (!tasks[questionIndex].reverted) {
+                    <svg-icon
+                      src="../../../assets/images/svg/play.svg"
+                      class="play-icon pointer svg-icon-size-medium"
+                      (click)="onPlayWordPronunciation(tasks[questionIndex].wordId)"
+                    ></svg-icon>
+                  }
+                </div>
+              </div>
+              @for (pictureId of tasks[questionIndex].pictureIds; track pictureId) {
+                <p-image
+                  [src]="staticConfigService.pictureUrl(pictureId)"
+                  [preview]="true"
+                  >
+                  <ng-template #indicator>
+                    <svg-icon src="../../../assets/images/svg/search.svg" class="search-icon"></svg-icon>
+                  </ng-template>
+                </p-image>
+              }
+              <ul class="usages">
+                @for (usage of tasks[questionIndex].usages; track usage) {
+                  <li
+                    class="usage-text"
+              [innerHTML]="
+                tasks[questionIndex].reverted
+                  ? usage
+                      .replaceAll(
+                        tasks[questionIndex].translations[0][0].toUpperCase() +
+                          tasks[questionIndex].translations[0].slice(
+                            1,
+                            tasks[questionIndex].translations[0].length
+                          ),
+                        '<i>' +
+                          tasks[questionIndex].translations[0][0].toUpperCase() +
+                          tasks[questionIndex].translations[0].slice(
+                            1,
+                            tasks[questionIndex].translations[0].length
+                          ) +
+                          '</i>'
+                      )
+                      .replaceAll(
+                        ' ' + tasks[questionIndex].translations[0] + ' ',
+                        ' <i>' + tasks[questionIndex].translations[0] + '</i> '
+                      )
+                      .replaceAll(
+                        ' ' + tasks[questionIndex].translations[0],
+                        ' <i>' + tasks[questionIndex].translations[0] + '</i>'
+                      )
+                  : usage
+                      .replaceAll(
+                        tasks[questionIndex].word[0].toUpperCase() +
+                          tasks[questionIndex].word.slice(1, tasks[questionIndex].word.length),
+                        '<i>' +
+                          tasks[questionIndex].word[0].toUpperCase() +
+                          tasks[questionIndex].word.slice(1, tasks[questionIndex].word.length) +
+                          '</i>'
+                      )
+                      .replaceAll(
+                        ' ' + tasks[questionIndex].word + ' ',
+                        ' <i>' + tasks[questionIndex].word + '</i> '
+                      )
+                      .replaceAll(
+                        ' ' + tasks[questionIndex].word,
+                        ' <i>' + tasks[questionIndex].word + '</i>'
+                      )
+              "
+              ></li>
+            }
+          </ul>
+        </div>
+      </div>
+    }
+    <div>
+      <button
+        type="submit"
+        pButton
+        pRipple
+        class="p-button-success"
+        [pAutoFocus]="true"
+        #submitButton
+        >
+        {{ showAnswer ? 'Know' : 'Next' }}
+      </button>
+      @if (showAnswer) {
+        <button type="button" pButton pRipple (click)="onDoNotKnow()">
+          Don't know
+        </button>
+      }
+    </div>
+  </div>
+}
+</form>
+
+@if (tasks.length != 0 && questionIndex === tasks.length && !showAnswer) {
+  <div>
+    <app-exercise-result
+      [exerciseWordStatistics]="exerciseWordStatistics"
+      [showWrongAnswer]="false"
+      (repeatExerciseEvent)="onRepeat()"
+    ></app-exercise-result>
+  </div>
+}
+</div>
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

@@ -1,0 +1,364 @@
+<div class="word-container">
+  <app-star
+    [ngClass]="{
+      hidden: isNewWord,
+      pointer: initialLearningProgress !== wordLearningProgressEnum.None,
+      flip: flipLearningProgressIcon,
+    }"
+    class="mr-10"
+    [wordLearningProgress]="wordTranslations?.wordLearningProgress ?? wordLearningProgressEnum.None"
+    (click)="onShowEditProgressPanel($event)"
+  ></app-star>
+  <p-inputGroup>
+    <p-floatLabel>
+      <p-autocomplete
+        [(ngModel)]="word"
+        [suggestions]="suggestions"
+        (completeMethod)="onComplete($event)"
+        (onSelect)="onCheckNewWord()"
+        inputId="word-input"
+        optionLabel="value"
+        (onClear)="onClear()"
+        (keyup.enter)="onCheckNewWord()"
+        appendTo="body"
+        >
+        <ng-template let-suggestion pTemplate="item">
+          <div>
+            <div class="suggestion-container">
+              <app-star
+                [highlighted]="suggestion.learningProgress === null"
+                [wordLearningProgress]="
+                  suggestion.learningProgress ?? wordLearningProgressEnum.Others
+                "
+                class="mr-10 small-size"
+              ></app-star>
+              <span class="suggestion-text font-size-x-large">{{ suggestion.value }}</span>
+            </div>
+          </div>
+        </ng-template>
+      </p-autocomplete>
+      <label for="word-input">Word</label>
+    </p-floatLabel>
+    <button
+      type="button"
+      pButton
+      pRipple
+      class="search-button"
+      [disabled]="!this.word"
+      (click)="onCheckNewWord()"
+      >
+      <svg-icon
+        src="../../../assets/images/svg/search.svg"
+        class="search-icon button-primary-color"
+      ></svg-icon>
+    </button>
+  </p-inputGroup>
+  <svg-icon
+    src="../../../assets/images/svg/play.svg"
+    [ngClass]="{
+      hidden: !wordTranslations,
+      disabled: !wordPronunciation && !wordTranslations?.hasPronunciation,
+      flip: flipPronunciationIcon,
+    }"
+    (click)="onPlayWordPronunciation()"
+    class="mlr-10 pointer play-icon"
+  ></svg-icon>
+  <svg-icon
+    [src]="
+      '../../../assets/images/svg/' +
+      (wordTranslations?.userUpload === true ? 'user-upload.svg' : 'computer-upload.svg')
+    "
+    [ngClass]="{
+      hidden: wordTranslations?.userUpload === null,
+      'user-upload-icon': wordTranslations?.userUpload === true,
+      'computer-upload-icon': wordTranslations?.userUpload === false,
+    }"
+    class="mlr-10 pointer"
+    (click)="setUserUpload(!wordTranslations?.userUpload)"
+  ></svg-icon>
+  <svg-icon
+    src="../../../assets/images/svg/add-audio.svg"
+    [class.hidden]="!wordTranslations || wordTranslations.userUpload === false"
+    class="file-audio mlr-10 pointer"
+    (click)="panelUploadWordPronunciation.show($event)"
+  ></svg-icon>
+</div>
+
+@if (!!wordTranslations) {
+  <p-pickList
+    #translationsPickList
+    [source]="othersTranslations"
+    [target]="myTranslations"
+    sourceHeader="Available Translations"
+    [dragdrop]="true"
+    [responsive]="true"
+    [showSourceControls]="false"
+    [showTargetControls]="false"
+    (onSourceSelect)="clearTranslationsSelection()"
+    (onTargetSelect)="clearTranslationsSelection()"
+    (onMoveToTarget)="onMoveToTarget($event)"
+    (onMoveToSource)="onMoveToSource($event)"
+    >
+    <ng-template pTemplate="targetHeader">
+      <svg-icon
+        src="../../../assets/images/svg/plus.svg"
+        (click)="panelNewTranslation.toggle($event)"
+        class="svg-icon-size-small pointer mr-10 rt-3"
+      ></svg-icon>
+      <div>My Translations</div>
+    </ng-template>
+    <ng-template let-translation pTemplate="item">
+      <div>
+        <div class="word-translation">
+          <svg-icon
+            src="../../../assets/images/svg/edit.svg"
+            (click)="onShowEditTranslationPanel(panelEditTranslation, translation, $event)"
+            class="edit-icon svg-icon-size-small mr-10 rt-5"
+          ></svg-icon>
+          <span class="font-bold font-size-x-large">{{ translation.value }}</span>
+        </div>
+        <p-popover #panelEditTranslation>
+          <p-inputGroup>
+            <input
+              type="text"
+              pInputText
+              [pAutoFocus]="true"
+              [(ngModel)]="editingTranslationValue"
+              (keyup.enter)="onEditTranslationCompleted(panelEditTranslation)"
+              class="font-size-x-large"
+              />
+              <button
+                type="button"
+                pButton
+                pRipple
+                [disabled]="!editingTranslationValue"
+                (click)="onEditTranslationCompleted(panelEditTranslation)"
+                >
+                <svg-icon
+                  src="../../../assets/images/svg/check-small.svg"
+                  class="check-small-icon"
+                ></svg-icon>
+              </button>
+            </p-inputGroup>
+          </p-popover>
+        </div>
+      </ng-template>
+    </p-pickList>
+  }
+
+  <div class="usages-pick-list">
+    @if (!!wordTranslations) {
+      <p-pickList
+        #usagesPickList
+        [source]="othersUsages"
+        [target]="myUsages"
+        sourceHeader="Available Usages"
+        [dragdrop]="true"
+        [responsive]="true"
+        [showSourceControls]="false"
+        [showTargetControls]="false"
+        (onSourceSelect)="clearUsagesSelection()"
+        (onTargetSelect)="clearUsagesSelection()"
+        >
+        <ng-template pTemplate="targetHeader">
+          <svg-icon
+            src="../../../assets/images/svg/plus.svg"
+            (click)="panelNewUsage.toggle($event)"
+            class="svg-icon-size-small pointer mr-10 rt-3"
+          ></svg-icon>
+          <div>My Usages</div>
+        </ng-template>
+        <ng-template let-usage pTemplate="item">
+          <div>
+            <div class="word-usage-container">
+              <svg-icon
+                src="../../../assets/images/svg/edit.svg"
+                (click)="onShowEditUsagePanel(panelEditUsage, usage, $event)"
+                class="edit-icon svg-icon-size-small mr-10 rt-5"
+              ></svg-icon>
+              <span class="font-bold">{{ usage.value }}</span>
+            </div>
+            <p-popover #panelEditUsage>
+              <p-inputGroup>
+                <input
+                  type="text"
+                  pInputText
+                  [pAutoFocus]="true"
+                  [(ngModel)]="editingUsageValue"
+                  (keyup.enter)="onEditUsageCompleted(panelEditUsage)"
+                  class="font-size-medium"
+                  />
+                  <button
+                    type="button"
+                    pButton
+                    pRipple
+                    [disabled]="!editingUsageValue"
+                    (click)="onEditUsageCompleted(panelEditUsage)"
+                    >
+                    <svg-icon
+                      src="../../../assets/images/svg/check-small.svg"
+                      class="check-small-icon"
+                    ></svg-icon>
+                  </button>
+                </p-inputGroup>
+              </p-popover>
+            </div>
+          </ng-template>
+        </p-pickList>
+      }
+    </div>
+
+    @if (wordTranslations) {
+      <div class="pictures">
+        <div class="pictures-row">
+          @if (wordTranslations.pictures.length < 3) {
+            <p-fileUpload
+              maxFileSize="1000000"
+              (onSelect)="onPictureDropped($event)"
+              >
+              <ng-template pTemplate="content">
+                <span>Drop picture</span>
+              </ng-template>
+            </p-fileUpload>
+          }
+          @for (
+            picture of wordTranslations.pictures; track
+            picture; let i = $index; let isFirst = $first; let isLast = $last) {
+            <div
+              class="picture-block-container"
+              >
+              <p-checkbox
+                [(ngModel)]="picture.enabled"
+                [binary]="true"
+                [name]="'picture-' + i"
+                color="primary"
+                >
+                <ng-template pTemplate="icon">
+                  <svg-icon
+                    src="../../../assets/images/svg/check-small.svg"
+                    class="check-small-icon checkbox"
+                  ></svg-icon>
+                </ng-template>
+              </p-checkbox>
+              <div class="picture-container">
+                <div class="image-container">
+                  <p-image
+                    class="word-translation-dialog-image"
+                    [src]="picture.url ? picture.url : staticConfigService.pictureUrl(picture.id)"
+                    alt="Image"
+                    [preview]="true"
+                    >
+                    <ng-template #indicator>
+                      <svg-icon src="../../../assets/images/svg/search.svg" class="search-icon"></svg-icon>
+                    </ng-template>
+                  </p-image>
+                </div>
+                <div class="icons-container">
+                  <svg-icon
+                    src="../../../assets/images/svg/arrow-left.svg"
+                    class="mlr-10 pointer svg-icon-size-medium"
+                    [hidden]="isFirst"
+                    (click)="onUpPicture(i)"
+                  ></svg-icon>
+                  <svg-icon
+                    src="../../../assets/images/svg/arrow-right.svg"
+                    [hidden]="isLast"
+                    class="mlr-10 pointer svg-icon-size-medium"
+                    (click)="onDownPicture(i)"
+                  ></svg-icon>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (!!wordTranslations) {
+      <button
+        pButton
+        pRipple
+        label="Save"
+        [disabled]="!word"
+        (click)="onSave()"
+        class="save"
+      ></button>
+    }
+
+    <p-toast position="bottom-left"/>
+
+    <div class="progress-spinner">
+      @if (isBusy) {
+        <span class="loader"></span>
+      }
+    </div>
+
+    <p-popover #panelEditLearningProgress (onHide)="calculateAvailableWordLearningProgresses()">
+      <div class="learning-progresses-container">
+        @for (learningProgress of availableWordLearningProgresses; track learningProgress) {
+          <app-star
+            class="selectable"
+            [wordLearningProgress]="learningProgress"
+            (click)="setLearningProgress(learningProgress)"
+            />
+        }
+      </div>
+    </p-popover>
+
+    <p-popover #panelUploadWordPronunciation>
+      <div class="word-pronunciation-container">
+        <p-fileUpload
+          accept="audio/*"
+          maxFileSize="1000000"
+          (onSelect)="onPronunciationDropped($event)"
+          >
+          <ng-template pTemplate="content">
+            <span>Drop pronunciation</span>
+          </ng-template>
+        </p-fileUpload>
+      </div>
+    </p-popover>
+
+    <p-popover #panelNewTranslation (onHide)="onNewTranslationOverlayHide()">
+      <p-inputGroup>
+        <input
+          type="text"
+          pInputText
+          [pAutoFocus]="true"
+          [(ngModel)]="newTranslation"
+          (keyup.enter)="onAddNewTranslation()"
+          class="font-size-x-large"
+          />
+          <button
+            type="button"
+            pButton
+            pRipple
+            [disabled]="!this.newTranslation"
+            (click)="onAddNewTranslation()"
+            >
+            <svg-icon
+              src="../../../assets/images/svg/check-small.svg"
+              class="check-small-icon"
+            ></svg-icon>
+          </button>
+        </p-inputGroup>
+      </p-popover>
+
+      <p-popover #panelNewUsage (onHide)="onNewUsageOverlayHide()">
+        <p-inputGroup>
+          <input
+            type="text"
+            pInputText
+            [pAutoFocus]="true"
+            [(ngModel)]="newUsage"
+            (keyup.enter)="onAddNewUsage()"
+            class="font-size-medium"
+            />
+            <button type="button" pButton pRipple [disabled]="!this.newUsage" (click)="onAddNewUsage()">
+              <svg-icon
+                src="../../../assets/images/svg/check-small.svg"
+                class="check-small-icon"
+              ></svg-icon>
+            </button>
+          </p-inputGroup>
+        </p-popover>

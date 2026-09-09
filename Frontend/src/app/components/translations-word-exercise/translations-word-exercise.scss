@@ -1,0 +1,38 @@
+.help-mode-container {
+  .help-mode-answer-container {
+    input {
+      border-radius: 0;
+      width: 64px;
+      font-size: var(--font-size-xx-large);
+      text-align: center;
+
+      &:hover {
+        border-color: var(--color-font-icons);
+      }
+    }
+  }
+
+  .help-mode-letters-container {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin: 20px 0;
+
+    .letter-box {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #1f1f1f;
+      border-radius: 6px;
+      border: 1px solid var(--p-inputtext-border-color);
+      font-weight: bold;
+      font-size: var(--font-size-xx-large);
+
+      &.disabled {
+        opacity: 0.2;
+      }
+    }
+  }
+}

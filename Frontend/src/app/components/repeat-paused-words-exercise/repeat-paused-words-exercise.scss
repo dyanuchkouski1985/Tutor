@@ -1,0 +1,58 @@
+.exercise-container {
+  clear: left;
+  color: var(--color-primary);
+  text-align: center;
+  font-size: var(--font-size-xxx-large);
+
+  form {
+    button {
+      margin-top: 2%;
+      margin-left: 10px;
+      margin-right: 10px;
+      background: var(--color-primary-light) !important;
+      font-family: cursive;
+      font-size: xx-large;
+      height: 60px !important;
+
+      &[type='button'] {
+        background: var(--color-error) !important;
+      }
+    }
+
+    .word-container {
+      div {
+        display: inline-block;
+        transition: all 2s linear;
+      }
+
+      .play-icon-container {
+        width: 42px;
+
+        svg-icon {
+          margin-left: 10px;
+
+          svg {
+            position: relative;
+            top: 3px;
+          }
+        }
+      }
+    }
+
+    .answer-container {
+      .usages {
+        margin: 10px 0px;
+
+        li {
+          list-style-type: none;
+          font-size: smaller;
+          text-align: left;
+        }
+      }
+
+      .correct-answer-value {
+        color: var(--color-primary-light);
+      }
+    }
+  }
+}

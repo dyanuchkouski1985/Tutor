@@ -1,0 +1,109 @@
+﻿<div class="desk">
+  <div class="timer">
+    @if (config.timer.enable && !showAnswer && questionIndex < tasks.length) {
+      <round-progress
+        [class.warn]="remainingTime <= config.timer.warningTimeInSeconds"
+        class="exercise-timer"
+        [current]="(100 * remainingTime) / config.timer.valueInSeconds"
+        [max]="100"
+        [radius]="50"
+        [stroke]="10"
+        [rounded]="true"
+        [duration]="1500"
+        />
+    }
+    @if (
+      config.timer.enable &&
+      config.timer.showSeconds &&
+      !showAnswer &&
+      questionIndex < tasks.length &&
+      remainingTime > 0
+      ) {
+      <div
+        class="timer-seconds"
+        >
+        {{ remainingTime }}
+      </div>
+    }
+  </div>
+  <div class="progressbar-container">
+    <p-progressBar [value]="(100 * questionIndex) / tasks.length">
+      <ng-template pTemplate="content" let-value>
+        <span>{{ questionIndex }}/{{ tasks.length }}</span>
+      </ng-template>
+    </p-progressBar>
+    <div class="answers-history">
+      @for (isCorrectAnswer of answersHistory; track isCorrectAnswer) {
+        <span>
+          <svg-icon
+            [class.completed]="isCorrectAnswer"
+            [src]="'../../../assets/images/svg/' + (isCorrectAnswer ? 'check.svg' : 'cross.svg')"
+            class="svg-animation-grow"
+          ></svg-icon>
+        </span>
+      }
+    </div>
+  </div>
+  <form (ngSubmit)="onNext()">
+    @if (questionIndex < tasks.length || showAnswer) {
+      <div>
+        @if (questionIndex < tasks.length && !showAnswer) {
+          <div>
+            <div class="word-container">
+              <div [innerHTML]="tasks[questionIndex].question" class="task"></div>
+            </div>
+            <input
+              type="text"
+              pInputText
+              [pAutoFocus]="true"
+              class="answer-input"
+              [(ngModel)]="answer"
+              name="answer"
+              />
+          </div>
+        }
+        @if (showAnswer) {
+          <div class="answer">
+            <div class="correct-answer">
+              <div class="word-container">
+                <span [innerHTML]="formattedQuestion"> </span>
+              </div>
+              <div class="correct-answer-container">
+                <span [innerHTML]="formattedAnswer" class="correct-answer-value"> </span>
+                <img
+                  [src]="'../assets/images/' + (isCorrectAnswer ? 'yes.png' : 'no.png')"
+                  [class.dislike]="!isCorrectAnswer"
+                  />
+              </div>
+            </div>
+          </div>
+        }
+        <div class="buttons-container">
+          <button
+            type="submit"
+            pButton
+            pRipple
+            class="p-button-success"
+            [disabled]="!showAnswer && !answer"
+            #submitButton
+            >
+            {{ showAnswer ? 'Next' : 'Answer' }}
+          </button>
+          @if (!showAnswer) {
+            <button type="button" pButton pRipple (click)="onDoNotKnow()">
+              Don't know
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </form>
+  @if (questionIndex == tasks.length && !showAnswer) {
+    <div>
+      <app-result
+        [correctAnswers]="tasks.length - failedTasks.length"
+        [failedTasks]="failedTasks"
+      ></app-result>
+    </div>
+  }
+</div>

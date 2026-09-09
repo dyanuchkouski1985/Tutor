@@ -1,0 +1,78 @@
+<div class="user-statistics">
+  @if (userStatistics) {
+    <div>
+      <div class="daily-percentage">
+        <round-progress
+          [class.completed]="userStatistics.dailyPercentage >= 100"
+          [current]="userStatistics.dailyPercentage"
+          [max]="100"
+          [radius]="50"
+          [stroke]="10"
+          [rounded]="true"
+          [duration]="1500"
+          />
+          <span>{{ userStatistics.dailyPercentage }}%</span>
+        </div>
+        <div class="word-statistics">
+          <div class="fully-learned">
+            <app-star [wordLearningProgress]="wordLearningProgressEnum.Completed"></app-star>
+            <span>{{ userStatistics.totalNumberOfCompletedWords }}</span>
+          </div>
+          <div class="fully-learned">
+            <app-star [wordLearningProgress]="wordLearningProgressEnum.Paused"></app-star>
+            <span>{{ userStatistics.totalNumberOfPausedWords }}</span>
+          </div>
+          <div class="fully-learned">
+            <app-star [wordLearningProgress]="wordLearningProgressEnum.Three"></app-star>
+            <span>{{ userStatistics.totalNumberOfWordsWithProgress3 }}</span>
+          </div>
+          <div class="star">
+            <app-star [wordLearningProgress]="wordLearningProgressEnum.Two"></app-star>
+            <span>{{ userStatistics.totalNumberOfWordsWithProgress2 }}</span>
+          </div>
+          <div>
+            <app-star [wordLearningProgress]="wordLearningProgressEnum.One"></app-star>
+            <span>{{ userStatistics.totalNumberOfWordsWithProgress1 }}</span>
+          </div>
+          <div class="not-started">
+            <app-star [wordLearningProgress]="wordLearningProgressEnum.None"></app-star>
+            <span>{{ userStatistics.totalNumberOfWordsWithProgress0 }}</span>
+          </div>
+          <div class="total-number">
+            {{ userStatistics.totalNumberOfWords }}
+          </div>
+        </div>
+        <div class="email">
+          {{ userStatistics.email }}
+          <ul>
+            @for (
+              percentage of userStatistics.lastDaysPercentages; track
+              percentage; let i = $index; let isLast = $last) {
+              <li
+                [class.last]="isLast"
+                >
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  [src]="'../../../assets/images/svg/' + (percentage >= 100 ? 'check.svg' : 'cross.svg')"
+            [pTooltip]="
+              (isLast
+                ? 'today'
+                : userStatistics.lastDaysPercentages.length -
+                  i -
+                  1 +
+                  (userStatistics.lastDaysPercentages.length - i - 1 === 1
+                    ? ' day ago'
+                    : ' days ago')) +
+              ': ' +
+              percentage
+            "
+                  [class.completed]="percentage >= 100"
+                  tooltipPosition="bottom"
+                ></svg-icon>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    }
+  </div>

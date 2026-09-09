@@ -1,0 +1,109 @@
+@if (crosswordModel && !showResult) {
+  <div
+    class="crossword-exercise"
+    [class.completed]="isCompleted"
+    >
+    <div class="questions">
+      <div>
+        <p>Horizontal:</p>
+        <ul>
+          @for (word of crosswordModel.horizontalWords; track word) {
+            <li
+              [class.active]="!isCompleted && word.wordId === activeWordId"
+              [class.error]="isCompleted && word.value !== word.answer"
+              [class.correct]="isCompleted && word.value === word.answer"
+              >
+              <app-star
+                [wordLearningProgress]="word.wordLearningProgress"
+                class="small-size mr-10 rt-5"
+              ></app-star>
+              <span (click)="onQuestionClick(word, true)">{{ word.translations.join('; ') }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+      <div>
+        <p>Vertical:</p>
+        <ul>
+          @for (word of crosswordModel.verticalWords; track word) {
+            <li
+              [class.active]="!isCompleted && word.wordId === activeWordId"
+              [class.error]="isCompleted && word.value !== word.answer"
+              [class.correct]="isCompleted && word.value === word.answer"
+              >
+              <app-star
+                [wordLearningProgress]="word.wordLearningProgress"
+                class="small-size mr-10 rt-5"
+              ></app-star>
+              <span (click)="onQuestionClick(word, false)">{{ word.translations.join('; ') }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+    <div class="board">
+      <div class="content">
+        @for (row of crosswordModel.board; track row; let y = $index) {
+          <div>
+            @for (cell of row; track cell; let x = $index) {
+              <input
+                type="text"
+                pInputText
+                #cell
+                name="cell"
+                maxlength="1"
+                [disabled]="isCompleted"
+                [ngModel]="cell && cell.answer"
+                (ngModelChange)="cell.answer = $event"
+                (focus)="onCellFocus($event, cell, y, x)"
+                (keydown)="onKeyDown($event, y, x)"
+                (keyup)="onKeyUp($event, cell, y, x)"
+                [class.hidden]="!cell"
+          [class.active]="
+            !isCompleted &&
+            cell &&
+            ((activeWordId &&
+              (cell.verticalWordId === activeWordId || cell.horizontalWordId === activeWordId)) ||
+              (activeY === y && activeX === x))
+          "
+                [class.correct]="isCompleted && cell && cell.answer === cell.value"
+                [class.error]="isCompleted && cell && cell.answer !== cell.value"
+                />
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <div class="buttons">
+      @if (!isCompleted) {
+        <button type="button" pButton pRipple (click)="onComplete()">
+          Complete
+        </button>
+      }
+      @if (isCompleted && !showResult) {
+        <button
+          type="button"
+          pButton
+          pRipple
+          (click)="onShowResult()"
+          >
+          Show result
+        </button>
+      }
+    </div>
+  </div>
+}
+@if (showResult) {
+  <div class="result">
+    <app-exercise-result
+      [exerciseWordStatistics]="exerciseWordStatistics"
+      (repeatExerciseEvent)="onRepeat()"
+    ></app-exercise-result>
+  </div>
+}
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

@@ -1,0 +1,88 @@
+.user-statistics {
+  min-height: 130px;
+
+  > div {
+    display: flex;
+    align-items: center;
+  }
+
+  .daily-percentage {
+    position: relative;
+    color: var(--color-primary);
+
+    &.completed {
+      color: var(--color-primary-light);
+    }
+
+    span {
+      position: absolute;
+      top: 28px;
+      left: 15px;
+      width: 70px;
+      text-align: center;
+      font-size: 28px;
+    }
+  }
+
+  .word-statistics {
+    display: flex;
+    color: var(--color-primary);
+
+    > .fully-learned > span {
+      color: var(--color-green);
+    }
+
+    > .star > span {
+      color: var(--color-secondary-highlight);
+    }
+
+    > .not-started > span {
+      color: var(--color-error);
+    }
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      margin: 0 5px;
+      justify-content: center;
+      text-align: center;
+
+      span {
+        font-size: xx-large;
+      }
+    }
+
+    .total-number {
+      font-size: 75px;
+    }
+  }
+
+  .email {
+    font-size: x-large;
+    color: var(--color-primary);
+    flex-direction: column;
+  }
+
+  ul {
+    padding: 0px;
+    margin: 4px 0 0 0;
+
+    > li {
+      display: inline-block;
+
+      svg-icon g path {
+        fill: var(--color-error) !important;
+        stroke: var(--color-error) !important;
+      }
+
+      svg-icon.completed g path {
+        fill: var(--color-green) !important;
+        stroke: var(--color-green) !important;
+      }
+
+      &.last {
+        margin-left: 10px;
+      }
+    }
+  }
+}

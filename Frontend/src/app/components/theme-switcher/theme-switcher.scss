@@ -1,0 +1,35 @@
+.primary-colors-container,
+.surface-colors-container,
+.preset-container,
+.ripple-container {
+  display: flex;
+  flex-direction: column;
+
+  .primary-color,
+  .surface-color,
+  .preset-label {
+    display: flex;
+    gap: 8px;
+
+    button {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      outline: 2px solid transparent;
+      outline-offset: 3px;
+      cursor: pointer;
+      transition:
+        outline-color 0.2s ease,
+        transform 0.15s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+
+      &:not([style*='outline-color: ;']) {
+        outline-width: 3px;
+      }
+    }
+  }
+}

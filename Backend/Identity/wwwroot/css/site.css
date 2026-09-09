@@ -1,0 +1,50 @@
+﻿body {
+    margin: 0;
+    font-family: cursive, "Helvetica Neue", sans-serif;
+    background-color: #17212f;
+}
+
+#account, #registerForm, #registerConfirmation {
+    margin-top: 28%;
+    min-width: 560px;
+}
+
+#account {
+    min-width: 400px;
+}
+
+:focus {
+    outline: 0 !important;
+}
+
+.input-validation-error {
+    border: 1px solid darkred;
+}
+
+form {
+    width: 100%;
+}
+
+.form-control {
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid lightgray;
+    font-size: 0.9rem;
+}
+
+.form-control:focus {
+    border-bottom-color: lightgray;
+    box-shadow: none;
+}
+
+.form-control.form-control-last {
+    border-bottom: 0;
+}
+
+.form-control::placeholder {
+    opacity: 0.6;
+}
+
+.form-control.input-validation-error {
+    border: 1px solid darkred;
+}

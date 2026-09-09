@@ -1,0 +1,16 @@
+<div class="result">
+  <div>
+    There are {{ correctAnswers }} correct answers from
+    {{ correctAnswers + failedTasks.length }} questions.
+  </div>
+  <div class="errors-list">
+    <ul>
+      @for (failedTask of failedTasks; track failedTask) {
+        <li>
+          <div [innerHTML]="failedTask.questionAsHtml"></div>
+          <div [innerHTML]="failedTask.answerAsHtml" class="answer"></div>
+        </li>
+      }
+    </ul>
+  </div>
+</div>

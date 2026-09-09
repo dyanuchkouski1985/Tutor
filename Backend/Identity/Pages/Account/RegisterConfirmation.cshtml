@@ -1,0 +1,26 @@
+﻿@page
+@model Identity.Pages.Account.RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Register confirmation";
+}
+
+<div class="row" id="registerConfirmation">
+    <div class="ml-auto mr-auto">
+        <h2 class="text-center text-success">@ViewData["Title"]</h2>
+        @{
+            if (Model.DisplayConfirmAccountLink)
+            {
+                <p class="text-success">
+                    This app does not currently have a real email sender registered, see <a class="text-info" href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
+                    Normally this would be emailed: <a id="confirm-link" class="text-info" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
+                </p>
+            }
+            else
+            {
+                <p>
+                    Please check your email to confirm your account.
+                </p>
+            }
+        }
+    </div>
+</div>

@@ -1,0 +1,440 @@
+<div class="home-page">
+  <div class="right-menu">
+    <div class="right-menu-first-row">
+      <svg-icon
+        src="../../../assets/images/svg/test.svg"
+        class="start-translations-word-exercise-button svg-icon-size-large pointer mlr-20"
+        (click)="onStartTranslationsWordExercise()"
+      ></svg-icon>
+      <svg-icon
+        src="../../../assets/images/svg/crossword.svg"
+        (click)="onStartCrosswordExercise()"
+        class="crossword-icon svg-icon-size-large pointer mlr-20"
+      ></svg-icon>
+      <div
+        class="repeat-words-button-container"
+        [class.disabled]="!userStatistics?.isAvailableRepeatPausedWordsExercise"
+        >
+        <svg-icon
+          src="../../../assets/images/svg/repeat.svg"
+          (click)="onStartRepeatPausedWordsExercise()"
+          class="svg-icon-size-large pointer mlr-20"
+        ></svg-icon>
+        <div class="repeat-paused-words-count">
+          {{ userStatistics?.availableRepeatPausedWordsCount }}
+        </div>
+      </div>
+      <img
+        [src]="'assets/images/Flags/' + (language === englishLanguage ? 'GB.png' : 'PL.png')"
+        class="language-image pointer mlr-20"
+        (click)="toggleLanguage()"
+        />
+      <svg-icon
+        src="../../../assets/images/svg/logout.svg"
+        class="logout-icon svg-icon-size-large svg-icon-size-large pointer mlr-20"
+        (click)="onLogout()"
+      ></svg-icon>
+    </div>
+
+    <div class="right-menu-second-row">
+      @if (eventDescriptions.length) {
+        <svg-icon
+          [pTooltip]="eventDescriptions.join('\n')"
+          tooltipPosition="bottom"
+          src="../../../assets/images/svg/reminder.svg"
+          class="reminder-icon mlr-20"
+        ></svg-icon>
+      }
+      <svg-icon
+        src="../../../assets/images/svg/add-word.svg"
+        (click)="onOpenWordTranslationsDialog()"
+        class="mlr-20 pointer"
+      ></svg-icon>
+      <svg-icon
+        [src]="
+          '../../../assets/images/svg/' +
+          (dynamicConfigService.muteSound ? 'mute.svg' : 'unmute.svg')
+        "
+        class="mute-sound-icon mlr-20 pointer"
+        (click)="onToggleSound()"
+      ></svg-icon>
+      <app-theme-switcher />
+    </div>
+  </div>
+
+  <div class="search-header-container">
+    @if (isSearchActive) {
+      <div class="total-count">{{ itemsTotalCount }} words</div>
+    }
+    <div class="search-filters-container">
+      <app-star
+        [filterable]="true"
+        [filtered]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.Completed)"
+        [wordLearningProgress]="wordLearningProgressEnum.Completed"
+        (click)="onFilterClick(wordLearningProgressEnum.Completed)"
+      ></app-star>
+      <app-star
+        [filterable]="true"
+        [filtered]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.Paused)"
+        [wordLearningProgress]="wordLearningProgressEnum.Paused"
+        (click)="onFilterClick(wordLearningProgressEnum.Paused)"
+      ></app-star>
+      <app-star
+        [filterable]="true"
+        [filtered]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.Three)"
+        [wordLearningProgress]="wordLearningProgressEnum.Three"
+        (click)="onFilterClick(wordLearningProgressEnum.Three)"
+      ></app-star>
+      <app-star
+        [filterable]="true"
+        [filtered]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.Two)"
+        [wordLearningProgress]="wordLearningProgressEnum.Two"
+        (click)="onFilterClick(wordLearningProgressEnum.Two)"
+      ></app-star>
+      <app-star
+        [filterable]="true"
+        [filtered]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.One)"
+        [wordLearningProgress]="wordLearningProgressEnum.One"
+        (click)="onFilterClick(wordLearningProgressEnum.One)"
+      ></app-star>
+      <app-star
+        [filterable]="true"
+        [filtered]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.None)"
+        [wordLearningProgress]="wordLearningProgressEnum.None"
+        (click)="onFilterClick(wordLearningProgressEnum.None)"
+      ></app-star>
+      <app-star
+        [filterable]="true"
+        [filtered]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.Others)"
+        [highlighted]="searchFilterLearningProgresses.includes(wordLearningProgressEnum.Others)"
+        [wordLearningProgress]="wordLearningProgressEnum.Others"
+        (click)="onFilterClick(wordLearningProgressEnum.Others)"
+      ></app-star>
+    </div>
+
+    <p-inputGroup class="search-text-container">
+      <p-floatLabel>
+        <input
+          type="text"
+          pInputText
+          [pAutoFocus]="true"
+          [(ngModel)]="searchText"
+          name="answer"
+          inputId="text-input"
+          (input)="onSearchChange($event.target)"
+          (keyup.enter)="onSearchWords()"
+          />
+        <label for="text-input">Text</label>
+      </p-floatLabel>
+      <button
+        type="submit"
+        pButton
+        pRipple
+        [disabled]="!searchFilterLearningProgresses.length"
+        (click)="onSearchWords()"
+        >
+        <svg-icon
+          src="../../../assets/images/svg/search.svg"
+          class="search-icon button-primary-color"
+        ></svg-icon>
+      </button>
+    </p-inputGroup>
+  </div>
+
+  @if (wordTranslations) {
+    <div class="table-container">
+      <p-table
+        [value]="items"
+        dataKey="id"
+        [customSort]="true"
+        (onSort)="onSortTable($event)"
+        [sortField]="sortField"
+        [sortOrder]="sortOrder"
+        [scrollable]="true"
+        [rows]="lazyLoadPageSize"
+        [virtualScroll]="true"
+        [virtualScrollItemSize]="121"
+        [lazy]="true"
+        (onLazyLoad)="onLazyLoad($event)"
+        styleClass="p-datatable-striped"
+      [virtualScrollOptions]="{
+        delay: 0,
+      }"
+        >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="{{ wordTranslationsFieldsConstants.WORD_LEARNING_PROGRESS }}">
+              @if (sortField !== wordTranslationsFieldsConstants.WORD_LEARNING_PROGRESS) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.WORD_LEARNING_PROGRESS &&
+                sortOrder === appConstants.SORT_ORDER_UP
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-up.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.WORD_LEARNING_PROGRESS &&
+                sortOrder === appConstants.SORT_ORDER_DOWN
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-down.svg"
+                ></svg-icon>
+              }
+            </th>
+            <th pSortableColumn="{{ wordTranslationsFieldsConstants.VALUE }}">
+              Word
+              @if (sortField !== wordTranslationsFieldsConstants.VALUE) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.VALUE &&
+                sortOrder === appConstants.SORT_ORDER_UP
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-up.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.VALUE &&
+                sortOrder === appConstants.SORT_ORDER_DOWN
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-down.svg"
+                ></svg-icon>
+              }
+            </th>
+            <th>Translations</th>
+            <th pSortableColumn="{{ wordTranslationsFieldsConstants.PICTURES }}">
+              Pictures
+              @if (sortField !== wordTranslationsFieldsConstants.PICTURES) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.PICTURES &&
+                sortOrder === appConstants.SORT_ORDER_UP
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-up.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.PICTURES &&
+                sortOrder === appConstants.SORT_ORDER_DOWN
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-down.svg"
+                ></svg-icon>
+              }
+            </th>
+            <th>Usages</th>
+            <th pSortableColumn="{{ wordTranslationsFieldsConstants.ADDING_DATE }}">
+              Added
+              @if (sortField !== wordTranslationsFieldsConstants.ADDING_DATE) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.ADDING_DATE &&
+                sortOrder === appConstants.SORT_ORDER_UP
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-up.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.ADDING_DATE &&
+                sortOrder === appConstants.SORT_ORDER_DOWN
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-down.svg"
+                ></svg-icon>
+              }
+            </th>
+            <th pSortableColumn="{{ wordTranslationsFieldsConstants.LAST_LEARNING_DATE }}">
+              Learned
+              @if (sortField !== wordTranslationsFieldsConstants.LAST_LEARNING_DATE) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.LAST_LEARNING_DATE &&
+                sortOrder === appConstants.SORT_ORDER_UP
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-up.svg"
+                ></svg-icon>
+              }
+              @if (
+                sortField === wordTranslationsFieldsConstants.LAST_LEARNING_DATE &&
+                sortOrder === appConstants.SORT_ORDER_DOWN
+                ) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/sort-down.svg"
+                ></svg-icon>
+              }
+            </th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-wordTranslation>
+          <tr>
+            <td>
+              <app-star
+                [highlighted]="true"
+                [wordLearningProgress]="wordTranslation.wordLearningProgress"
+              ></app-star>
+            </td>
+            <td class="col-word">
+              <div>{{ wordTranslation.value }}</div>
+              @if (wordTranslation.isAnyNewPictureAvailable) {
+                <svg-icon
+                  class="svg-icon-size-medium"
+                  src="../../../assets/images/svg/new-picture.svg"
+                ></svg-icon>
+              }
+              <svg-icon
+                src="../../../assets/images/svg/play.svg"
+                class="play-icon pointer svg-icon-size-medium"
+                (click)="onPlayWordPronunciation(wordTranslation.id)"
+              ></svg-icon>
+              <svg-icon
+                src="../../../assets/images/svg/open.svg"
+                class="pointer open-word-translations-dialog-icon svg-icon-size-medium"
+                (click)="onOpenWordTranslationsDialog(wordTranslation.value)"
+              ></svg-icon>
+              @if (!!wordTranslation.addingDate) {
+                <svg-icon
+                  src="../../../assets/images/svg/delete.svg"
+                  class="pointer delete-icon svg-icon-size-medium"
+                  (click)="onConfirmDelete($event, panelConfirmDelete, wordTranslation.id)"
+                ></svg-icon>
+              }
+              <p-popover #panelConfirmDelete>
+                <div class="confirm-delete-container">
+                  <svg-icon
+                    class="svg-icon-size-medium pointer cross-icon mr-10"
+                    src="../../../assets/images/svg/cross.svg"
+                    (click)="panelConfirmDelete.hide()"
+                  ></svg-icon>
+                  <svg-icon
+                    class="svg-icon-size-medium pointer"
+                    src="../../../assets/images/svg/check.svg"
+                    (click)="onDeleteWord(panelConfirmDelete)"
+                  ></svg-icon>
+                </div>
+              </p-popover>
+            </td>
+            <td class="col-translations">
+              <div class="translations-container">
+                <div
+                  [innerHTML]="wordTranslation.translations | joinProperties: 'value'"
+                  class="translation"
+                ></div>
+              </div>
+            </td>
+            <td class="col-picture">
+              @for (picture of wordTranslation.pictures; track picture) {
+                <p-image
+                  [src]="staticConfigService.pictureUrl(picture.id)"
+                  [preview]="true"
+                  (click)="onImagePreviewShow()"
+                  (onHide)="onImagePreviewHide()"
+                  appendTo="body"
+                  >
+                  <ng-template #indicator>
+                    <svg-icon
+                      src="../../../assets/images/svg/search.svg"
+                      class="search-icon"
+                    ></svg-icon>
+                  </ng-template>
+                </p-image>
+              }
+            </td>
+            <td class="col-usages">
+              <div class="usages-container">
+                @for (usage of wordTranslation.usages; track usage) {
+                  <div
+                    [innerHTML]="usage.value | highlightWord: wordTranslation.value"
+                    class="usage-text"
+                  ></div>
+                }
+              </div>
+            </td>
+            <td class="col-adding-date">
+              @if (wordTranslation.addingDate) {
+                <span>
+                  {{ wordTranslation.addingDate | date: 'd/M/yy H:mm:s' }}
+                </span>
+              }
+            </td>
+            <td class="col-learning-date">
+              @if (wordTranslation.lastLearningDate) {
+                <span>
+                  {{ wordTranslation.lastLearningDate | date: 'd/M/yy H:mm:s' }}
+                </span>
+              }
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="loadingbody">
+          <tr class="table-row" style="height: 99px; width: 100%">
+            <td style="width: 4%">
+              <p-skeleton height="2rem"></p-skeleton>
+            </td>
+            <td style="width: 14%">
+              <p-skeleton height="2rem"></p-skeleton>
+            </td>
+            <td style="width: 22%">
+              <p-skeleton height="2rem"></p-skeleton>
+            </td>
+            <td style="width: 10%">
+              <p-skeleton height="2rem"></p-skeleton>
+            </td>
+            <td style="width: 25%">
+              <p-skeleton height="2rem"></p-skeleton>
+            </td>
+            <td>
+              <p-skeleton height="2rem"></p-skeleton>
+            </td>
+            <td>
+              <p-skeleton height="2rem"></p-skeleton>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  }
+</div>
+
+<p-scrollTop [threshold]="1500" [behavior]="'smooth'" />
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

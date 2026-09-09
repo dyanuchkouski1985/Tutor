@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1080" height="1080" viewBox="0 0 1080 1080" xml:space="preserve">
+<g transform="matrix(1 0 0 1 540 540)" id="e6203e18-3534-4431-a5f8-0fbc35ebaf58"  >
+<rect style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1; visibility: hidden;" vector-effect="non-scaling-stroke"  x="-540" y="-540" rx="0" ry="0" width="1080" height="1080" />
+</g>
+<g transform="matrix(1 0 0 1 540 540)" id="0d638360-1339-48f2-a46c-bfa63091ad80"  >
+</g>
+<g transform="matrix(59.24 0 0 67.11 244.74 538.12)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-7, -12)" d="M 6.71291 4.05691 C 6.62445 4.09351 6.54158 4.14776 6.46967 4.21967 L 3.21967 7.46967 C 2.92678 7.76256 2.92678 8.23744 3.21967 8.53033 C 3.51256 8.82322 3.98744 8.82322 4.28033 8.53033 L 6.25 6.56066 L 6.25 19.25 C 6.25 19.6642 6.58579 20 7 20 C 7.41421 20 7.75 19.6642 7.75 19.25 L 7.75 6.56066 L 9.71967 8.53033 C 10.0126 8.82322 10.4874 8.82322 10.7803 8.53033 C 11.0732 8.23744 11.0732 7.76256 10.7803 7.46967 L 7.53033 4.21967 C 7.38388 4.07322 7.19194 4 7 4 C 6.89831 4 6.80134 4.02024 6.71291 4.05691 Z" stroke-linecap="round" />
+</g>
+<g transform="matrix(59.24 0 0 67.11 837.09 538.12)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-17, -12)" d="M 13.2197 15.4697 C 13.5126 15.1768 13.9874 15.1768 14.2803 15.4697 L 16.25 17.4393 L 16.25 4.75 C 16.25 4.33579 16.5858 4 17 4 C 17.4142 4 17.75 4.33579 17.75 4.75 L 17.75 17.4393 L 19.7197 15.4697 C 20.0126 15.1768 20.4874 15.1768 20.7803 15.4697 C 21.0732 15.7626 21.0732 16.2374 20.7803 16.5303 L 17.5303 19.7803 C 17.3839 19.9268 17.1919 20 17 20 C 16.8983 20 16.8013 19.9798 16.7129 19.9431 C 16.6245 19.9065 16.5416 19.8522 16.4697 19.7803 L 13.2197 16.5303 C 12.9268 16.2374 12.9268 15.7626 13.2197 15.4697 Z" stroke-linecap="round" />
+</g>
+</svg>

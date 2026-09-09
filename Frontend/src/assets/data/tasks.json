@@ -1,0 +1,227 @@
+﻿[
+  {
+    "question": "dom*",
+    "answer": "u",
+    "answerAsHtml": "dom<i>u</i>"
+  },
+  {
+    "question": "*brany",
+    "answer": "u",
+    "answerAsHtml": "<i>u</i>brany"
+  },
+  {
+    "question": "m*",
+    "answer": "u",
+    "answerAsHtml": "m<i>u</i>"
+  },
+  {
+    "question": "sł*chać",
+    "answer": "u",
+    "answerAsHtml": "sł<i>u</i>chać"
+  },
+  {
+    "question": "posł*giwać",
+    "answer": "u",
+    "answerAsHtml": "posł<i>u</i>giwać"
+  },
+  {
+    "question": "sk*wka",
+    "answer": "u",
+    "answerAsHtml": "sk<i>u</i>wka"
+  },
+  {
+    "question": "zak*py",
+    "answer": "u",
+    "answerAsHtml": "zak<i>u</i>py"
+  },
+  {
+    "question": "k*pił",
+    "answer": "u",
+    "answerAsHtml": "k<i>u</i>pił"
+  },
+  {
+    "question": "kapel*sz",
+    "answer": "u",
+    "answerAsHtml": "kapel<i>u</i>sz"
+  },
+  {
+    "question": "ci*pagę",
+    "answer": "u",
+    "answerAsHtml": "ci<i>u</i>pagę"
+  },
+  {
+    "question": "*dany",
+    "answer": "u",
+    "answerAsHtml": "<i>u</i>dany"
+  },
+  {
+    "question": "m*j",
+    "answer": "ó",
+    "answerAsHtml": "m<i>ó</i>j"
+  },
+  {
+    "question": "str*j",
+    "answer": "ó",
+    "answerAsHtml": "str<i>ó</i>j"
+  },
+  {
+    "question": "pi*ro",
+    "answer": "ó",
+    "answerAsHtml": "pi<i>ó</i>ro"
+  },
+  {
+    "question": "g*ra",
+    "answer": "ó",
+    "answerAsHtml": "g<i>ó</i>ra"
+  },
+  {
+    "question": "g*ral",
+    "answer": "ó",
+    "answerAsHtml": "g<i>ó</i>ral"
+  },
+  {
+    "question": "*w",
+    "answer": "ó",
+    "answerAsHtml": "<i>ó</i>w"
+  },
+  {
+    "question": "ser*w",
+    "answer": "ó",
+    "answerAsHtml": "ser<i>ó</i>w"
+  },
+  {
+    "question": "wędr*wka",
+    "answer": "ó",
+    "answerAsHtml": "wędr<i>ó</i>wka"
+  },
+  {
+    "question": "instrument*w",
+    "answer": "ó",
+    "answerAsHtml": "instrument<i>ó</i>w"
+  },
+  {
+    "question": "kt*ry",
+    "answer": "ó",
+    "answerAsHtml": "kt<i>ó</i>ry"
+  },
+  {
+    "question": "p*źniej",
+    "answer": "ó",
+    "answerAsHtml": "p<i>ó</i>źniej"
+  },
+  {
+    "question": "spr*bować",
+    "answer": "ó",
+    "answerAsHtml": "spr<i>ó</i>bować"
+  },
+  {
+    "question": "nast*pnego",
+    "answer": "ę",
+    "answerAsHtml": "nast<i>ę</i>pnego"
+  },
+  {
+    "question": "pami*tki",
+    "answer": "ą",
+    "answerAsHtml": "pami<i>ą</i>tki"
+  },
+  {
+    "question": "ż*k",
+    "answer": "u",
+    "answerAsHtml": "ż<i>u</i>k"
+  },
+  {
+    "question": "wa*ka",
+    "answer": "ż",
+    "answerAsHtml": "wa<i>ż</i>ka"
+  },
+  {
+    "question": "kr*k",
+    "answer": "u",
+    "answerAsHtml": "kr<i>u</i>k"
+  },
+  {
+    "question": "wą*",
+    "answer": "ż",
+    "answerAsHtml": "wą<i>ż</i>"
+  },
+  {
+    "question": "p*czoła",
+    "answer": "sz",
+    "answerAsHtml": "p<i>sz</i>choła"
+  },
+  {
+    "question": "sk*nks",
+    "answer": "u",
+    "answerAsHtml": "sk<i>u</i>nks"
+  },
+  {
+    "question": "kog*t",
+    "answer": "u",
+    "answerAsHtml": "kog<i>u</i>t"
+  },
+  {
+    "question": "je*",
+    "answer": "ż",
+    "answerAsHtml": "je<i>ż</i>"
+  },
+  {
+    "question": "jask*łka",
+    "answer": "ó",
+    "answerAsHtml": "jask<i>ó</i>łka"
+  },
+  {
+    "question": "wiewi*rka",
+    "answer": "ó",
+    "answerAsHtml": "wiewi<i>ó</i>rka"
+  },
+  {
+    "question": "k*ra",
+    "answer": "u",
+    "answerAsHtml": "k<i>u</i>ra"
+  },
+  {
+    "question": "wr*bel",
+    "answer": "ó",
+    "answerAsHtml": "wr<i>ó</i>bel"
+  },
+  {
+    "question": "kr*lik",
+    "answer": "ó",
+    "answerAsHtml": "kr<i>ó</i>lik"
+  },
+  {
+    "question": "kr*l",
+    "answer": "ó",
+    "answerAsHtml": "kr<i>ó</i>l"
+  },
+  {
+    "question": "kr*lewna",
+    "answer": "ó",
+    "answerAsHtml": "kr<i>ó</i>lewna"
+  },
+  {
+    "question": "r*żdżka",
+    "answer": "ó",
+    "answerAsHtml": "r<i>ó</i>żdżka"
+  },
+  {
+    "question": "żr*dło",
+    "answer": "ó",
+    "answerAsHtml": "żr<i>ó</i>dło"
+  },
+  {
+    "question": "r*ża",
+    "answer": "ó",
+    "answerAsHtml": "r<i>ó</i>ża"
+  },
+  {
+    "question": "og*rek",
+    "answer": "ó",
+    "answerAsHtml": "og<i>ó</i>rek"
+  },
+  {
+    "question": "ch*r",
+    "answer": "ó",
+    "answerAsHtml": "ch<i>ó</i>r"
+  }
+]

@@ -1,0 +1,118 @@
+.crossword-exercise {
+  font-size: xx-large;
+  color: var(--color-primary);
+
+  input {
+    border-radius: 0;
+
+    &:hover {
+      border-color: var(--color-font-icons);
+    }
+  }
+
+  &.completed {
+    input {
+      cursor: not-allowed;
+    }
+
+    ul {
+      li span {
+        cursor: not-allowed;
+      }
+
+      li.error span {
+        color: var(--color-error);
+      }
+
+      li.correct span {
+        color: var(--color-primary-heavy);
+      }
+    }
+  }
+
+  p {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+  ul {
+    margin-top: 0px;
+    padding-left: 10px;
+
+    li {
+      list-style-type: none;
+      display: flex;
+      align-items: center;
+
+      span {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      &.active span {
+        color: var(--color-primary-light);
+      }
+    }
+  }
+
+  .questions {
+    display: inline-block;
+    width: 30%;
+    margin-left: 1%;
+    box-sizing: border-box;
+  }
+
+  .board {
+    display: inline-block;
+    width: 68%;
+    margin-right: 1%;
+    vertical-align: top;
+    box-sizing: border-box;
+
+    .content {
+      width: 1000px;
+      margin: 0 auto;
+
+      input {
+        width: 64px;
+        font-size: xx-large;
+        text-align: center;
+        border-width: 2px;
+
+        &.p-component:disabled {
+          opacity: 1;
+        }
+
+        &.hidden {
+          visibility: hidden;
+        }
+
+        &.active,
+        &.correct {
+          border-color: var(--color-font-icons) !important;
+        }
+
+        &.error {
+          border-color: var(--color-error) !important;
+        }
+      }
+    }
+  }
+
+  .buttons {
+    text-align: center;
+
+    button {
+      margin: 2% 10px 2% 10px;
+      background: var(--color-primary-light) !important;
+      font-family: cursive;
+      font-size: xx-large;
+      height: 60px !important;
+    }
+  }
+}
+
+.result {
+  font-size: var(--font-size-xxx-large);
+  text-align: center;
+}

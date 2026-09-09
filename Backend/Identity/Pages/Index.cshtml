@@ -1,0 +1,16 @@
+﻿@page
+
+<header class="mt-5 text-center">
+    @{
+        if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <p class="text-success">You have successfully logged in.</p>
+            <a type="button" asp-controller="connect" asp-action="logout" class="btn btn-outline-success">Logout</a>
+        }
+        else
+        {
+            <p class ="text-success">You have successfully logged out of the application.</p>
+            <a type="button" asp-controller="account" asp-action="login" class="btn btn-outline-success">Login</a>
+        }
+    }
+</header>

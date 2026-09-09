@@ -1,0 +1,112 @@
+<div class="result">
+  <svg-icon src="../../../assets/images/svg/home.svg" class="home" (click)="onHome()"></svg-icon>
+  <div class="result-list">
+    <p-table [value]="exerciseWordStatistics" styleClass="p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th></th>
+          <th>Word</th>
+          <th>Translations</th>
+          <th>Pictures</th>
+          <th>Usages</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-exerciseWordStatistic>
+        <tr [class.wrong-answer]="!exerciseWordStatistic.isCorrectAnswer">
+          <td>
+            <app-star
+              [wordLearningProgress]="exerciseWordStatistic.wordLearningProgress"
+            ></app-star>
+          </td>
+          <td>
+            <div class="answer">
+              <span
+                pTooltip="not &quot;{{ exerciseWordStatistic.answer }}&quot;"
+                [escape]="false"
+                tooltipPosition="bottom"
+                [tooltipDisabled]="
+                  !showWrongAnswer ||
+                  exerciseWordStatistic.isCorrectAnswer ||
+                  !exerciseWordStatistic.answer
+                "
+                >
+                {{
+                exerciseWordStatistic.reverted
+                ? exerciseWordStatistic.translations[0]
+                : exerciseWordStatistic.word
+                }}
+              </span>
+            </div>
+            @if (exerciseWordStatistic.withHelp) {
+              <svg-icon
+                src="../../../assets/images/svg/help.svg"
+                class="svg-icon-size-medium"
+              ></svg-icon>
+            }
+            @if (exerciseWordStatistic.isAnyNewPictureAvailable) {
+              <svg-icon
+                src="../../../assets/images/svg/new-picture.svg"
+                class="svg-icon-size-medium"
+              ></svg-icon>
+            }
+            <svg-icon
+              src="../../../assets/images/svg/play.svg"
+              class="play-icon pointer svg-icon-size-medium"
+              (click)="onPlayWordPronunciation(exerciseWordStatistic.wordId)"
+            ></svg-icon>
+            <svg-icon
+              src="../../../assets/images/svg/open.svg"
+              class="open-word-translations-dialog-icon pointer svg-icon-size-medium"
+              (click)="onOpenWordTranslationsDialog(exerciseWordStatistic)"
+            ></svg-icon>
+          </td>
+          <td>
+            <div
+              [innerHTML]="
+                exerciseWordStatistic.reverted
+                  ? exerciseWordStatistic.word
+                  : exerciseWordStatistic.translations.join('; ')
+              "
+              class="translation font-size-x-large"
+            ></div>
+          </td>
+          <td class="col-picture">
+            @for (pictureId of exerciseWordStatistic.pictureIds; track pictureId) {
+              <p-image
+                [src]="staticConfigService.pictureUrl(pictureId)"
+                [preview]="true"
+                >
+                <ng-template #indicator>
+                  <svg-icon
+                    src="../../../assets/images/svg/search.svg"
+                    class="search-icon"
+                  ></svg-icon>
+                </ng-template>
+              </p-image>
+            }
+          </td>
+          <td>
+            <ul class="usages">
+              @for (usage of exerciseWordStatistic.usages; track usage) {
+                <li
+                  class="usage-text"
+                [innerHTML]="
+                  usage
+                    | highlightWord
+                      : (exerciseWordStatistic.reverted
+                          ? exerciseWordStatistic.translations[0]
+                          : exerciseWordStatistic.word)
+                "
+                ></li>
+              }
+            </ul>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  <div class="buttons-container">
+    <button type="submit" pButton pRipple (click)="onRepeat()">Repeat</button>
+    <button type="button" pButton pRipple class="back" (click)="onHome()">Home</button>
+  </div>
+</div>

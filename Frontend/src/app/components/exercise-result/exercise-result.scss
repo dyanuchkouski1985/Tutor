@@ -1,0 +1,78 @@
+.result {
+  color: var(--color-primary);
+  padding-bottom: 20px;
+
+  .home {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    cursor: pointer;
+
+    svg {
+      height: 48px;
+      width: 48px;
+    }
+  }
+
+  .result-list {
+    overflow-y: auto;
+    color: var(--color-primary-light);
+    font-size: xx-large;
+
+    .usages {
+      margin: 0;
+
+      li {
+        color: var(--color-primary);
+        font-size: smaller;
+      }
+
+      .usage-text {
+        font-size: 20px;
+      }
+    }
+
+    .answer {
+      color: var(--color-primary-highlight);
+    }
+
+    p-table tr.wrong-answer {
+      .answer {
+        color: var(--color-error);
+      }
+    }
+  }
+}
+
+.usages li {
+  list-style-type: none;
+}
+
+.open-word-translations-dialog-icon {
+  color: var(--color-primary-highlight);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.new-pictures-available {
+  cursor: auto;
+  color: var(--color-secondary-highlight);
+  margin-right: 0;
+}
+
+.error-answer {
+  color: var(--color-error);
+}
+
+button {
+  margin-top: 2%;
+  margin-left: 10px;
+  margin-right: 10px;
+  background: var(--color-primary-light) !important;
+  font-family: cursive;
+  font-size: xx-large;
+
+  &.back {
+    background: var(--color-error) !important;
+  }
+}

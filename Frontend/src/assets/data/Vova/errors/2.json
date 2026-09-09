@@ -1,0 +1,60 @@
+[{
+  "question": "68<br/>+<br/>25",
+  "answer": "93"
+},
+{
+  "question": "95<br/>-<br/>17",
+  "answer": "78"
+},
+{
+  "question": "15<br/>+<br/>47<br/>+<br/>19",
+  "answer": "81"
+},
+{
+  "question": "14+3+5(<=>)8+9",
+  "answer": ">"
+},
+{
+  "question": "84**=79",
+  "answer": "-5"
+},
+{
+  "question": "63-37",
+  "answer": "26"
+},
+{
+  "question": "90-45",
+  "answer": "45"
+},
+{
+  "question": "36-18",
+  "answer": "18"
+},
+{
+  "question": "2X-Y=6<br/>3Y=6<br/>(X=?)",
+  "answer": "4"
+},
+{
+  "question": "5-2X+2=5<br/>(X=?)",
+  "answer": "1"
+},
+{
+  "question": "33**=40",
+  "answer": "+7"
+},
+{
+  "question": "2X-Y=6<br/>3Y=6<br/>(X=?)",
+  "answer": "4"
+},
+{
+  "question": "2X+2Y=6<br/>(X+Y=?)",
+  "answer": "3"
+},
+{
+  "question": "13-3X+2=12<br/>(X=?)",
+  "answer": "1"
+},
+{
+  "question": "8+8+8(<=>)9+8+7",
+  "answer": "="
+}]

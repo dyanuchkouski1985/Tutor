@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1080" height="1080" viewBox="0 0 1080 1080" xml:space="preserve">
+<g transform="matrix(13.4 0 0 13.4 540 540)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-50, -50)" d="M 82.64 42.64 L 57.36 42.64 L 57.36 17.36 C 57.36 13.3 54.07 10 50 10 C 45.94 10 42.64 13.29 42.64 17.36 L 42.64 42.64 L 17.36 42.64 C 13.29 42.64 10 45.94 10 50 C 10 54.06 13.29 57.36 17.36 57.36 L 42.64 57.36 L 42.64 82.64 C 42.64 86.7 45.93 90 50 90 C 54.06 90 57.36 86.71 57.36 82.64 L 57.36 57.36 L 82.64 57.36 C 86.7 57.36 90 54.07 90 50 C 90 45.94 86.71 42.64 82.64 42.64 z" stroke-linecap="round" />
+</g>
+</svg>

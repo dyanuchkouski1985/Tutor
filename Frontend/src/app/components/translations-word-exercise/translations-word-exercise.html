@@ -1,0 +1,203 @@
+<div class="desk">
+  <div class="timer">
+    <round-progress
+      *ngIf="staticConfigService.enableTimer && !showAnswer && questionIndex < tasks.length"
+      [class.warn]="remainingTime <= staticConfigService.warningTimeInSeconds"
+      class="exercise-timer"
+      [current]="(100 * remainingTime) / staticConfigService.timerValueInSeconds"
+      [max]="100"
+      [radius]="50"
+      [stroke]="10"
+      [rounded]="true"
+      [duration]="1500"
+    />
+
+    <div
+      *ngIf="
+        staticConfigService.enableTimer &&
+        staticConfigService.showTimerSeconds &&
+        !showAnswer &&
+        questionIndex < tasks.length &&
+        remainingTime > 0
+      "
+      class="timer-seconds"
+    >
+      {{ remainingTime }}
+    </div>
+  </div>
+  <div class="progressbar-container">
+    <p-progressBar [value]="(100 * questionIndex) / tasks.length">
+      <ng-template pTemplate="content" let-value>
+        <span>{{ questionIndex }}/{{ tasks.length }}</span>
+      </ng-template>
+    </p-progressBar>
+    <div class="answers-history">
+      <span *ngFor="let isCorrectAnswer of answersHistory; let i = index">
+        <svg-icon
+          [class.completed]="isCorrectAnswer"
+          [src]="'../../../assets/images/svg/' + (isCorrectAnswer ? 'check.svg' : 'cross.svg')"
+          class="svg-animation-grow"
+        ></svg-icon>
+
+        <svg-icon
+          src="../../../assets/images/svg/help.svg"
+          class="svg-animation-grow help-icon svg-icon-size-small"
+          [class.completed]="isCorrectAnswer"
+          [ngClass]="{
+            completed: isCorrectAnswer,
+            hidden: !helpHistory[i]
+          }"
+        ></svg-icon>
+      </span>
+    </div>
+  </div>
+  <form (ngSubmit)="onNext()">
+    <div *ngIf="questionIndex < tasks.length || showAnswer">
+      <div *ngIf="questionIndex < tasks.length && !showAnswer">
+        <p-image
+          *ngFor="let pictureId of tasks[questionIndex].pictureIds"
+          [src]="staticConfigService.pictureUrl(pictureId)"
+          [preview]="true"
+        >
+          <ng-template #indicator>
+            <svg-icon src="../../../assets/images/svg/search.svg" class="search-icon"></svg-icon>
+          </ng-template>
+        </p-image>
+        <div class="word-container">
+          <app-star [wordLearningProgress]="tasks[questionIndex].wordLearningProgress"></app-star>
+          <div [innerHTML]="tasks[questionIndex].translations.join('; ')" class="task"></div>
+        </div>
+        <input
+          type="text"
+          pInputText
+          [pAutoFocus]="true"
+          *ngIf="!isHelpMode"
+          class="answer-input"
+          [(ngModel)]="answer"
+          name="answer"
+        />
+        <div *ngIf="isHelpMode" class="help-mode-container">
+          <div class="help-mode-answer-container">
+            <input
+              #helpModeAnswerCell
+              type="text"
+              pInputText
+              *ngFor="let letter of helpModeAnswer; index as i; trackBy: trackByIndex"
+              maxlength="1"
+              (keydown)="onHelpModeAnswerKeyDown($event, i)"
+            />
+          </div>
+          <div class="help-mode-letters-container">
+            <span
+              *ngFor="let letter of helpModeAnswerLetters"
+              [ngClass]="{
+                disabled: !letter.Enabled,
+                pointer: letter.Enabled,
+              }"
+              class="letter-box"
+              (click)="onClickLetter(letter)"
+            >
+              {{ letter.Value === ' ' ? '\u00A0' : letter.Value }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="answer" *ngIf="showAnswer">
+        <p-image
+          *ngFor="let pictureId of tasks[questionIndex - 1].pictureIds"
+          [src]="staticConfigService.pictureUrl(pictureId)"
+          [preview]="true"
+        >
+          <ng-template #indicator>
+            <svg-icon src="../../../assets/images/svg/search.svg" class="search-icon"></svg-icon>
+          </ng-template>
+        </p-image>
+        <div class="correct-answer">
+          <div class="word-container">
+            <app-star
+              [wordLearningProgress]="
+                isCorrectAnswer
+                  ? tasks[questionIndex - 1].wordLearningProgress === 3
+                    ? tasks[questionIndex - 1].wordLearningProgress
+                    : tasks[questionIndex - 1].wordLearningProgress + 1
+                  : tasks[questionIndex - 1].wordLearningProgress
+                    ? tasks[questionIndex - 1].wordLearningProgress - 1
+                    : tasks[questionIndex - 1].wordLearningProgress
+              "
+            ></app-star>
+            <span [innerHTML]="tasks[questionIndex - 1].translations.join('; ')"> </span>
+          </div>
+          <div class="correct-answer-container">
+            <span [innerHTML]="formattedAnswer" class="correct-answer-value"> </span>
+            <img
+              [src]="'../assets/images/' + (isCorrectAnswer ? 'yes.png' : 'no.png')"
+              [class.dislike]="!isCorrectAnswer"
+            />
+            <svg-icon
+              *ngIf="!tasks[questionIndex - 1].reverted"
+              src="../../../assets/images/svg/play.svg"
+              class="play-icon pointer"
+              (click)="onPlayWordPronunciation(tasks[questionIndex - 1].wordId)"
+            ></svg-icon>
+          </div>
+          <ul class="usages">
+            <li
+              *ngFor="let usage of tasks[questionIndex - 1].usages"
+              class="usage-text"
+              [innerHTML]="
+                usage
+                  .replaceAll(
+                    tasks[questionIndex - 1].word[0].toUpperCase() +
+                      tasks[questionIndex - 1].word.slice(1, tasks[questionIndex - 1].word.length),
+                    '<i>' +
+                      tasks[questionIndex - 1].word[0].toUpperCase() +
+                      tasks[questionIndex - 1].word.slice(1, tasks[questionIndex - 1].word.length) +
+                      '</i>'
+                  )
+                  .replaceAll(
+                    ' ' + tasks[questionIndex - 1].word + ' ',
+                    ' <i>' + tasks[questionIndex - 1].word + '</i> '
+                  )
+                  .replaceAll(
+                    ' ' + tasks[questionIndex - 1].word,
+                    ' <i>' + tasks[questionIndex - 1].word + '</i>'
+                  )
+              "
+            ></li>
+          </ul>
+        </div>
+      </div>
+      <div class="buttons-container">
+        <button
+          type="submit"
+          pButton
+          pRipple
+          class="p-button-success"
+          #submitButton
+          [disabled]="isSubmitDisabled"
+        >
+          {{ showAnswer ? 'Next' : 'Answer' }}
+        </button>
+        <button type="button" pButton pRipple *ngIf="!showAnswer" (click)="onDoNotKnow()">
+          Don't know
+        </button>
+        <svg-icon
+          *ngIf="!showAnswer && !isHelpMode"
+          src="../../../assets/images/svg/help.svg"
+          class="help-icon pointer"
+          (click)="onHelp()"
+        ></svg-icon>
+      </div>
+    </div>
+  </form>
+  <div *ngIf="tasks.length != 0 && questionIndex == tasks.length && !showAnswer">
+    <app-exercise-result
+      [exerciseWordStatistics]="exerciseWordStatistics"
+      (repeatExerciseEvent)="onRepeat()"
+    ></app-exercise-result>
+  </div>
+</div>
+
+<div class="progress-spinner">
+  <span class="loader" *ngIf="isBusy"></span>
+</div>

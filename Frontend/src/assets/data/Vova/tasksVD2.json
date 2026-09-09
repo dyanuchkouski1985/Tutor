@@ -1,0 +1,68 @@
+[
+  {
+    "question": "sw*j",
+    "answer": "ó",
+    "extendedAnswer": "swój",
+    "answerAsHtml": "sw<i>ó</i>j"
+  },
+  {
+    "question": "r*owy (розовый)",
+    "answer": "óż",
+    "extendedAnswer": "różowy",
+    "answerAsHtml": "r<i>óż</i>owy"
+  },
+  {
+    "question": "samoch*d",
+    "answer": "ó",
+    "extendedAnswer": "samochód",
+    "answerAsHtml": "samoch<i>ó</i>d"
+  },
+  {
+    "question": "k*ko (колесо)",
+    "answer": "ół",
+    "extendedAnswer": "kółko",
+    "answerAsHtml": "i<i>ół</i>ko"
+  },
+  {
+    "question": "malu*a (малюха)",
+    "answer": "ch",
+    "extendedAnswer": "malucha",
+    "answerAsHtml": "malu<i>ch</i>a"
+  },
+  {
+    "question": "s*dmej (седьмой)",
+    "answer": "ió",
+    "extendedAnswer": "siódmej",
+    "answerAsHtml": "s<i>ió</i>dmej"
+  },
+  {
+    "question": "l*ka (кровати)",
+    "answer": "óż",
+    "extendedAnswer": "lóżka",
+    "answerAsHtml": "l<i>óż</i>ka"
+  },
+  {
+    "question": "zało*ył",
+    "answer": "ż",
+    "extendedAnswer": "założył",
+    "answerAsHtml": "zało<i>ż</i>ył"
+  },
+  {
+    "question": "ż*tą (жёлтую)",
+    "answer": "ół",
+    "extendedAnswer": "żółtą",
+    "answerAsHtml": "ż<i>ół</i>tą"
+  },
+  {
+    "question": "*oły (школы)",
+    "answer": "szk",
+    "extendedAnswer": "szkoły",
+    "answerAsHtml": "<i>szk</i>oły"
+  },
+  {
+    "question": "klas*wkę",
+    "answer": "ó",
+    "extendedAnswer": "klasówkę",
+    "answerAsHtml": "klas<i>ó</i>wkę"
+  }
+]

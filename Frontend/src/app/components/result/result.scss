@@ -1,0 +1,21 @@
+.result {
+  color: var(--color-primary);
+  padding-bottom: 20px;
+}
+
+li {
+  text-align: left;
+  margin: -1px 15px -1px auto;
+  border: 1px solid var(--color-primary-heavy-dark);
+  padding: 10px 0px 10px 10px;
+}
+
+.errors-list {
+  overflow-y: auto;
+  color: var(--color-primary-light);
+  font-size: xx-large;
+}
+
+.answer {
+  color: var(--color-primary-highlight);
+}

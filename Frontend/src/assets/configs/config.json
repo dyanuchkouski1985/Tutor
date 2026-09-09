@@ -1,0 +1,67 @@
+{
+  "tasks": {
+    "shuffle": true,
+    "reverse": false,
+    "take": 6
+  },
+  "shuffleTasks": true,
+  "timer": {
+    "enable": true,
+    "valueInSeconds": 40,
+    "warningTimeInSeconds": 20,
+    "showSeconds": true
+  },
+  "identity": "https://localhost:7008/",
+  "api": "https://localhost:7151/api/",
+  "allowEditTranslations": true,
+  "events": [
+    {
+      "date": "1986-01-03",
+      "description": "Vitaly Zakalinsky Birthday"
+    },
+    {
+      "date": "2013-01-29",
+      "description": "Lera Yanuchkouska Birthday"
+    },
+    {
+      "date": "1986-03-09",
+      "description": "Vitaly Tarasevich Birthday"
+    },
+    {
+      "date": "1956-04-21",
+      "description": "Vladzimir Yanuchkouski Birthday"
+    },
+    {
+      "date": "1986-07-04",
+      "description": "Sergey Kluchenia Birthday"
+    },
+    {
+      "date": "2014-07-05",
+      "description": "Wedding"
+    },
+    {
+      "date": "1983-07-25",
+      "description": "Alex Taratenko Birthday"
+    },
+    {
+      "date": "1987-08-16",
+      "description": "Sanik Birthday"
+    },
+    {
+      "date": "1986-08-27",
+      "description": "Zahar Birthday"
+    },
+    {
+      "date": "1968-09-16",
+      "description": "Mother Birthday"
+    },
+    {
+      "date": "1978-10-22",
+      "description": "Vitaly Pobudzei Birthday"
+    },
+    {
+      "date": "1981-12-27",
+      "description": "Sister Birthday"
+    }
+  ]
+}

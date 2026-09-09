@@ -1,0 +1,123 @@
+:host-context(.word-translations-dialog) {
+  .word-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    p-inputgroup {
+      margin: 20px 0;
+      width: auto;
+
+      .search-button {
+        width: 3rem;
+      }
+
+      .p-autocomplete {
+        width: 400px;
+      }
+    }
+
+    svg-icon {
+      &.disabled {
+        opacity: 0.2;
+        cursor: auto;
+      }
+    }
+  }
+
+  .usages-pick-list {
+    margin-top: 10px;
+  }
+
+  .pictures {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-top: 20px;
+    position: relative;
+
+    :not(.pictures) {
+      align-items: center;
+    }
+
+    .pictures-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin-bottom: 5px;
+
+      & input[disabled] {
+        opacity: 60%;
+      }
+    }
+
+    .dropzone {
+      width: 100px;
+      height: 100px;
+      border-radius: 5px;
+      box-shadow: 3px 3px 10px var(--color-primary);
+      font-size: 25px;
+      line-height: 30px;
+      background-color: var(--color-primary);
+      opacity: 0.5;
+      transition: all 0.5s linear;
+      color: var(--color-error);
+
+      &.drag-over {
+        opacity: 1;
+        box-shadow: none;
+      }
+    }
+
+    .pictures-row {
+      justify-content: start;
+      margin-bottom: 10px;
+      margin-left: 290px;
+
+      .picture-block-container {
+        display: flex;
+        align-items: center;
+
+        p-checkbox {
+          display: flex;
+          margin-left: 20px;
+        }
+
+        .picture-container {
+          display: flex;
+          flex-direction: column;
+
+          .image-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            width: 100px;
+            height: 100px;
+            margin-left: 10px;
+          }
+
+          .icons-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+          }
+        }
+      }
+    }
+  }
+
+  button.save {
+    display: block;
+    margin: 10px auto 0 auto;
+    font-size: 30px;
+  }
+}
+
+.learning-progresses-container {
+  display: flex;
+}
+
+.suggestion-container {
+  display: flex;
+}

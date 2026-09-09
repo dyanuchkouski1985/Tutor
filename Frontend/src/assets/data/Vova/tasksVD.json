@@ -1,0 +1,90 @@
+[{
+  "question": "j**",
+  "answer": "uż",
+  "extendedAnswer": "już",
+  "answerAsHtml": "j<i>uż</i>"
+},
+{
+  "question": "p*yszła",
+  "answer": "rz",
+  "extendedAnswer": "przyszła",
+  "answerAsHtml": "p<i>rz</i>yszła"
+},
+{
+  "question": "ogr*dk*",
+  "answer": "óu",
+  "extendedAnswer": "ogródku",
+  "answerAsHtml": "ogr<i>ó</i>dk<i>u</i>"
+},
+{
+  "question": "**łte",
+  "answer": "żó",
+  "extendedAnswer": "żółte",
+  "answerAsHtml": "<i>żó</i>łte"
+},
+{
+  "question": "t*lipany",
+  "answer": "u",
+  "extendedAnswer": "tulipany",
+  "answerAsHtml": "t<i>u</i>lipany"
+},
+{
+  "question": "r**owe",
+  "answer": "óż",
+  "extendedAnswer": "różowe",
+  "answerAsHtml": "r<i>óż</i>owe"
+},
+{
+  "question": "krok*sy",
+  "answer": "u",
+  "extendedAnswer": "krokusy",
+  "answerAsHtml": "krok<i>u</i>sy"
+},
+{
+  "question": "ob*dziło",
+  "answer": "u",
+  "extendedAnswer": "obudziło",
+  "answerAsHtml": "ob<i>u</i>dziło"
+},
+{
+  "question": "wiewi*rki",
+  "answer": "ó",
+  "extendedAnswer": "wiewiórki",
+  "answerAsHtml": "wiewi<i>ó</i>rki"
+},
+{
+  "question": "m*j",
+  "answer": "ó",
+  "extendedAnswer": "mój",
+  "answerAsHtml": "m<i>ó</i>j"
+},
+{
+  "question": "d**y",
+  "answer": "uż",
+  "extendedAnswer": "duży",
+  "answerAsHtml": "d<i>uż</i>y"
+},
+{
+  "question": "*siadła",
+  "answer": "u",
+  "extendedAnswer": "usiadła",
+  "answerAsHtml": "<i>u</i>siadła"
+},
+{
+  "question": "p*cz*łka",
+  "answer": "szó",
+  "extendedAnswer": "pszczółka",
+  "answerAsHtml": "p<i>sz</i>cz<i>ó</i>łka"
+},
+{
+  "question": "Jask*łki",
+  "answer": "ó",
+  "extendedAnswer": "Jaskółki",
+  "answerAsHtml": "Jask<i>ó</i>łki"
+},
+{
+  "question": "b*d*ją",
+  "answer": "uu",
+  "extendedAnswer": "budują",
+  "answerAsHtml": "b<i>u</i>d<i>u</i>ją"
+}]

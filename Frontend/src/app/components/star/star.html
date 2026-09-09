@@ -1,0 +1,77 @@
+@if (wordLearningProgress === wordLearningProgressEnum.None) {
+  <svg-icon
+    src="../../../assets/images/svg/empty-star.svg"
+    class="not-started"
+  [ngClass]="{
+    filterable: filterable,
+    filtered: filtered,
+  }"
+  ></svg-icon>
+}
+
+@if (wordLearningProgress === wordLearningProgressEnum.One) {
+  <svg-icon
+    src="../../../assets/images/svg/half-star.svg"
+    class="half-star"
+  [ngClass]="{
+    filterable: filterable,
+    filtered: filtered,
+  }"
+  ></svg-icon>
+}
+
+@if (wordLearningProgress === wordLearningProgressEnum.Two) {
+  <svg-icon
+    src="../../../assets/images/svg/star.svg"
+    class="star"
+  [ngClass]="{
+    filterable: filterable,
+    filtered: filtered,
+  }"
+  ></svg-icon>
+}
+
+@if (wordLearningProgress === wordLearningProgressEnum.Three) {
+  <svg-icon
+    src="../../../assets/images/svg/star.svg"
+    class="fully-learned"
+  [ngClass]="{
+    filterable: filterable,
+    filtered: filtered,
+  }"
+  ></svg-icon>
+}
+
+@if (wordLearningProgress === wordLearningProgressEnum.Paused) {
+  <svg-icon
+    src="../../../assets/images/svg/pause.svg"
+    class="fully-learned"
+  [ngClass]="{
+    filterable: filterable,
+    filtered: filtered,
+  }"
+  ></svg-icon>
+}
+
+@if (wordLearningProgress === wordLearningProgressEnum.Completed) {
+  <svg-icon
+    src="../../../assets/images/svg/check.svg"
+    class="fully-learned"
+  [ngClass]="{
+    filterable: filterable,
+    filtered: filtered,
+  }"
+  ></svg-icon>
+}
+
+@if (wordLearningProgress === wordLearningProgressEnum.Others) {
+  <svg-icon
+    src="../../../assets/images/svg/alien.svg"
+    class="alien-icon"
+  [ngClass]="{
+    highlighted: highlighted,
+    filterable: filterable,
+    filtered: filtered,
+  }"
+  ></svg-icon>
+}

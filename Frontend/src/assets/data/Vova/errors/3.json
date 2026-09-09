@@ -1,0 +1,60 @@
+[{
+  "question": "5-2X+2=5<br/>(X=?)",
+  "answer": "1"
+},
+{
+  "question": "2X-2Y=6<br/>2Y=6<br/>(X=?)",
+  "answer": "6"
+},
+{
+  "question": "800<br/>-<br/>393",
+  "answer": "407"
+},
+{
+  "question": "38<br/>+<br/>43<br/>-<br/>13",
+  "answer": "68"
+},
+{
+  "question": "356<br/>+<br/>195<br/>-<br/>117",
+  "answer": "434"
+},
+{
+  "question": "Периметр треугольника (13см, 14см, 15см)",
+  "answer": "42"
+},
+{
+  "question": "14<br/>+<br/>33<br/>-<br/>19",
+  "answer": "28"
+},
+{
+  "question": "5дм 3см + 1дм 8см (Ответ в см)",
+  "answer": "71"
+},
+{
+  "question": "3X=13<br/>2Y=8<br>X(<=>)Y",
+  "answer": ">"
+},
+{
+  "question": "4X+4Y=10<br/>2Z=5<br/>X+Y+Z=?",
+  "answer": "5"
+},
+{
+  "question": "9-3X+6=3<br/>(X=?)",
+  "answer": "4"
+},
+{
+  "question": "13<br/>-<br/>28<br/>+<br/>17",
+  "answer": "2"
+},
+{
+  "question": "8X=9<br/>3Y=5<br>X(<=>)Y",
+  "answer": "<"
+},
+{
+  "question": "Длина площадки 22 м, а ширина — на 12 м меньше.<br/>Каков периметр площадки?",
+  "answer": "64"
+},
+{
+  "question": "6X=15<br/>3Y=8<br>X(<=>)Y",
+  "answer": "<"
+}]

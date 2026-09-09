@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+
+    <title>Authorization Server</title>
+
+    <link rel="stylesheet" href="~/css/libs/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="container-sm mt-3">
+        <div class="row">
+            <div class="col-xs-12 col-md-8 col-xl-6 mb-3 ml-auto mr-auto">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    <script src="~/js/libs/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script>
+    <script src="~/js/libs/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

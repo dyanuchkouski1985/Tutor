@@ -1,0 +1,17 @@
+﻿@model System.String
+
+@if (!String.IsNullOrEmpty(Model))
+{
+    var statusMessageClass = Model.StartsWith("Error") ? "danger" : "success";
+    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
+        @Model
+    </div>
+    @if (!Model.StartsWith("Error"))
+    {
+        <div>
+            <p class="mt-3">
+                <a asp-page="./Login" class="text-success">Login</a>
+            </p>
+        </div>
+    }
+}
