@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "PowerShell(Get-Process *)",
+      "PowerShell(Test-NetConnection *)",
+      "PowerShell(Get-Item *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(cat *)",
+      "Bash(sed -n *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(dotnet *)",
+      "PowerShell(dotnet *)",
+      "Bash(dotnet build *)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(Select-String *)",
+      "PowerShell(Select-Object *)",
+      "Bash(dotnet ef migrations add *)",
+      "Bash(dotnet ef migrations list *)",
+      "Bash(dotnet ef database update *)",
+      "PowerShell(dotnet ef migrations add *)",
+      "PowerShell(dotnet ef migrations list *)",
+      "PowerShell(dotnet ef database update *)",
+      "Bash(npx tsc *)",
+      "Bash(npx prettier *)",
+      "Bash(npx ng build *)",
+      "Bash(npx ng test *)",
+      "PowerShell(npx tsc *)",
+      "PowerShell(npx prettier *)",
+      "PowerShell(npx ng build *)",
+      "PowerShell(npx ng test *)",
+      "PowerShell(Test-Path *)"
+    ]
+  }
+}

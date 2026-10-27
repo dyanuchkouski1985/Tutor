@@ -11,6 +11,18 @@
     "warningTimeInSeconds": 20,
     "showSeconds": true
   },
+  "speechExercise": {
+    "enable": true,
+    "continuousRecording": true,
+    "maxRecordingSeconds": 120,
+    "maxAlternatives": 5,
+    "localRecognition": true,
+    "browserSpeech": false,
+    "recognitionLanguageTags": {
+      "english": "en-US",
+      "polish": "pl-PL"
+    }
+  },
   "identity": "https://localhost:7008/",
   "api": "https://localhost:7151/api/",
   "allowEditTranslations": true,

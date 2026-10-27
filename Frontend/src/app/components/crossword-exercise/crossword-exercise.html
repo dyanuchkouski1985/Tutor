@@ -1,8 +1,5 @@
 @if (crosswordModel && !showResult) {
-  <div
-    class="crossword-exercise"
-    [class.completed]="isCompleted"
-    >
+  <div class="crossword-exercise" [class.completed]="isCompleted">
     <div class="questions">
       <div>
         <p>Horizontal:</p>
@@ -10,9 +7,9 @@
           @for (word of crosswordModel.horizontalWords; track word) {
             <li
               [class.active]="!isCompleted && word.wordId === activeWordId"
-              [class.error]="isCompleted && word.value !== word.answer"
-              [class.correct]="isCompleted && word.value === word.answer"
-              >
+              [class.error]="word.status === 'wrong'"
+              [class.correct]="word.status === 'correct'"
+            >
               <app-star
                 [wordLearningProgress]="word.wordLearningProgress"
                 class="small-size mr-10 rt-5"
@@ -28,9 +25,9 @@
           @for (word of crosswordModel.verticalWords; track word) {
             <li
               [class.active]="!isCompleted && word.wordId === activeWordId"
-              [class.error]="isCompleted && word.value !== word.answer"
-              [class.correct]="isCompleted && word.value === word.answer"
-              >
+              [class.error]="word.status === 'wrong'"
+              [class.correct]="word.status === 'correct'"
+            >
               <app-star
                 [wordLearningProgress]="word.wordLearningProgress"
                 class="small-size mr-10 rt-5"
@@ -47,48 +44,62 @@
           <div>
             @for (cell of row; track cell; let x = $index) {
               <input
+                class="ui-input"
                 type="text"
-                pInputText
                 #cell
                 name="cell"
                 maxlength="1"
                 [disabled]="isCompleted"
                 [ngModel]="cell && cell.answer"
-                (ngModelChange)="cell.answer = $event"
+                [readonly]="!!cell?.isLocked"
+                (ngModelChange)="onCellChange(cell, y, x, $event)"
                 (focus)="onCellFocus($event, cell, y, x)"
                 (keydown)="onKeyDown($event, y, x)"
                 (keyup)="onKeyUp($event, cell, y, x)"
                 [class.hidden]="!cell"
-          [class.active]="
-            !isCompleted &&
-            cell &&
-            ((activeWordId &&
-              (cell.verticalWordId === activeWordId || cell.horizontalWordId === activeWordId)) ||
-              (activeY === y && activeX === x))
-          "
-                [class.correct]="isCompleted && cell && cell.answer === cell.value"
-                [class.error]="isCompleted && cell && cell.answer !== cell.value"
-                />
+                [class.active]="
+                  !isCompleted &&
+                  cell &&
+                  ((activeWordId &&
+                    (cell.verticalWordId === activeWordId ||
+                      cell.horizontalWordId === activeWordId)) ||
+                    (activeY === y && activeX === x))
+                "
+                [class.correct]="
+                  cell &&
+                  (cell.isLocked || isCompleted) &&
+                  !cell.isRevealed &&
+                  isSame(cell.answer, cell.value)
+                "
+                [class.error]="
+                  cell && (cell.isRevealed || (isCompleted && !isSame(cell.answer, cell.value)))
+                "
+              />
             }
           </div>
+        }
+        @if (checkIcon; as icon) {
+          <svg-icon
+            src="../../../assets/images/svg/check.svg"
+            class="check-word-icon pointer"
+            [style.top.px]="icon.top"
+            [style.left.px]="icon.left"
+            [style.width.px]="icon.width"
+            [style.height.px]="icon.height"
+            appTooltip="Check this word"
+            tooltipPosition="top"
+            (mousedown)="$event.preventDefault()"
+            (click)="onCheckWord()"
+          ></svg-icon>
         }
       </div>
     </div>
     <div class="buttons">
       @if (!isCompleted) {
-        <button type="button" pButton pRipple (click)="onComplete()">
-          Complete
-        </button>
+        <button type="button" class="ui-button" (click)="onComplete()">Complete</button>
       }
       @if (isCompleted && !showResult) {
-        <button
-          type="button"
-          pButton
-          pRipple
-          (click)="onShowResult()"
-          >
-          Show result
-        </button>
+        <button type="button" class="ui-button" (click)="onShowResult()">Show result</button>
       }
     </div>
   </div>
@@ -97,9 +108,15 @@
   <div class="result">
     <app-exercise-result
       [exerciseWordStatistics]="exerciseWordStatistics"
+      availabilityFlag="isAvailableCrosswordExercise"
       (repeatExerciseEvent)="onRepeat()"
     ></app-exercise-result>
   </div>
+}
+@if (isUnavailable) {
+  <app-exercise-unavailable
+    message="A crossword needs at least 8 single words you haven't practised today. Come back tomorrow or add more words."
+  ></app-exercise-unavailable>
 }
 
 <div class="progress-spinner">

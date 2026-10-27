@@ -1,0 +1,47 @@
+.ui-progressbar {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  height: 1.25rem;
+  border-radius: var(--ui-radius-content);
+  background: var(--ui-border-color);
+}
+
+.ui-progressbar-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ui-primary-color);
+  transition: width 1s ease-in-out;
+}
+
+.ui-progressbar-label {
+  display: inline-flex;
+  color: var(--ui-on-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ui-scrolltop {
+  position: fixed;
+  inset-block-end: 20px;
+  inset-inline-end: 20px;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: 50%;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 300ms,
+    visibility 300ms,
+    background var(--ui-transition-duration);
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}

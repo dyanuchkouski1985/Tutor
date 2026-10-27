@@ -1,0 +1,94 @@
+<div class="activity-calendar">
+  <div class="view-switch">
+    <app-select-button
+      [options]="viewOptions"
+      [(ngModel)]="view"
+      (selectionChange)="onViewChange()"
+      optionLabel="label"
+      optionValue="value"
+    />
+  </div>
+
+  @if (view === 'exercises') {
+    <app-exercise-popularity />
+  } @else {
+    <div class="toolbar">
+      <app-select-button
+        [options]="periodOptions"
+        [(ngModel)]="months"
+        (selectionChange)="load()"
+        size="small"
+        optionLabel="label"
+        optionValue="value"
+      />
+      <app-select-button
+        [options]="modeOptions"
+        [(ngModel)]="mode"
+        (selectionChange)="build()"
+        size="small"
+        optionLabel="label"
+        optionValue="value"
+      />
+    </div>
+
+    <div class="summary">
+      <div>
+        <span class="value">{{ currentStreak }}</span>
+        <span class="label">current streak</span>
+      </div>
+      <div>
+        <span class="value">{{ longestStreak }}</span>
+        <span class="label">longest streak</span>
+      </div>
+      <div>
+        <span class="value">{{ goalDaysCount }}/{{ daysCount }}</span>
+        <span class="label">{{ mode === 'total' ? 'goal days' : 'cap days' }}</span>
+      </div>
+      <div>
+        <span class="value">{{ activeDaysCount }}</span>
+        <span class="label">active days</span>
+      </div>
+    </div>
+
+    <div class="calendar">
+      <div class="week-days">
+        @for (label of weekDayLabels; track $index) {
+          <span>{{ label }}</span>
+        }
+      </div>
+      <div class="grid-column">
+        <div class="grid" #grid>
+          @for (week of weeks; track $index) {
+            <div class="week">
+              <span class="month">{{ week.monthLabel }}</span>
+              @for (cell of week.cells; track $index) {
+                @if (cell) {
+                  <span
+                    class="cell level-{{ cell.level }}"
+                    [class.today]="cell.isToday"
+                    [appTooltip]="cell.tooltip"
+                    tooltipPosition="top"
+                  ></span>
+                } @else {
+                  <span class="cell empty"></span>
+                }
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span>Less</span>
+      @for (legendLevel of legendLevels; track legendLevel.level) {
+        <span
+          class="cell level-{{ legendLevel.level }}"
+          [appTooltip]="legendLevel.tooltip"
+          tooltipPosition="top"
+        ></span>
+      }
+      <span>{{ mode === 'total' ? 'Goal' : 'Cap' }} {{ goal }}</span>
+    </div>
+  }
+</div>

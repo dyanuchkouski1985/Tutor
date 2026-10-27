@@ -1,0 +1,129 @@
+.ui-input {
+  box-sizing: border-box;
+  appearance: none;
+  padding-block: var(--ui-field-padding-y);
+  padding-inline: var(--ui-field-padding-x);
+  border: 1px solid var(--ui-input-border-color);
+  border-radius: var(--ui-field-radius);
+  outline-color: transparent;
+  background: var(--ui-field-background);
+  color: var(--ui-field-color);
+  box-shadow: var(--ui-field-shadow);
+  font-family: inherit;
+  font-size: 1rem;
+  transition:
+    background var(--ui-transition-duration),
+    color var(--ui-transition-duration),
+    border-color var(--ui-transition-duration),
+    outline-color var(--ui-transition-duration),
+    box-shadow var(--ui-transition-duration);
+
+  &:enabled:hover {
+    border-color: var(--ui-field-hover-border-color);
+  }
+
+  &:enabled:focus {
+    border-color: var(--ui-field-focus-border-color);
+    box-shadow: var(--ui-field-focus-ring-shadow);
+    outline: var(--ui-field-focus-ring-width) var(--ui-field-focus-ring-style)
+      var(--ui-field-focus-ring-color);
+    outline-offset: var(--ui-field-focus-ring-offset);
+  }
+
+  &.ng-invalid.ng-dirty {
+    border-color: var(--ui-field-invalid-border-color);
+  }
+
+  &:disabled {
+    background: var(--ui-field-disabled-background);
+    color: var(--ui-field-disabled-color);
+  }
+
+  &::placeholder {
+    color: var(--ui-field-placeholder-color);
+  }
+}
+
+.ui-floatlabel {
+  display: block;
+  position: relative;
+  width: auto !important;
+
+  label {
+    position: absolute;
+    top: 50%;
+    inset-inline-start: var(--ui-field-padding-x);
+    transform: translateY(-50%);
+    color: var(--ui-float-label-color);
+    font-size: initial;
+    font-weight: 500;
+    line-height: 1;
+    pointer-events: none;
+    transition: all 0.2s ease;
+  }
+
+  &:has(textarea) label {
+    top: var(--ui-field-padding-y);
+    transform: none;
+  }
+
+  &:has(:focus, input:not(:placeholder-shown), textarea:not(:placeholder-shown), :-webkit-autofill)
+    label {
+    top: -1.25rem;
+    transform: none;
+    font-size: 0.75rem;
+    font-weight: normal;
+  }
+
+  &:has(input:not(:placeholder-shown), textarea:not(:placeholder-shown)) label {
+    color: var(--ui-float-label-active-color);
+  }
+
+  &:has(:focus, :-webkit-autofill) label {
+    color: var(--ui-float-label-focus-color);
+  }
+
+  &:has(.ng-invalid.ng-dirty) label {
+    color: var(--ui-float-label-invalid-color);
+  }
+}
+
+.ui-inputgroup,
+.ui-inputgroup .ui-floatlabel {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.ui-inputgroup .ui-input {
+  flex: 1 1 auto;
+  width: 1%;
+}
+
+.ui-inputgroup > .ui-input,
+.ui-inputgroup > .ui-button,
+.ui-inputgroup > .ui-floatlabel > .ui-input,
+.ui-inputgroup > .ui-floatlabel > .ui-autocomplete > .ui-input {
+  margin: 0;
+  border-radius: 0;
+}
+
+.ui-inputgroup > .ui-input:first-child,
+.ui-inputgroup > .ui-button:first-child,
+.ui-inputgroup > .ui-floatlabel:first-child > .ui-input,
+.ui-inputgroup > .ui-floatlabel:first-child > .ui-autocomplete > .ui-input {
+  border-start-start-radius: var(--ui-radius-field);
+  border-end-start-radius: var(--ui-radius-field);
+}
+
+.ui-inputgroup > .ui-input:last-child,
+.ui-inputgroup > .ui-button:last-child,
+.ui-inputgroup > .ui-floatlabel:last-child > .ui-input,
+.ui-inputgroup > .ui-floatlabel:last-child > .ui-autocomplete > .ui-input {
+  border-start-end-radius: var(--ui-radius-field);
+  border-end-end-radius: var(--ui-radius-field);
+}
+
+.ui-inputgroup .ui-input:focus {
+  z-index: 1;
+}

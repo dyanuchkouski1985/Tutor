@@ -1,0 +1,128 @@
+.ui-image {
+  display: inline-flex;
+  position: relative;
+  line-height: 0;
+}
+
+.ui-image-preview-mask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ui-mask-color);
+  opacity: 0;
+  cursor: pointer;
+  transition: background var(--ui-transition-duration);
+
+  .ui-image:hover > &,
+  &:focus-visible {
+    opacity: 1;
+    background: var(--ui-mask-background);
+    outline: none;
+  }
+}
+
+.ui-image-mask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 99800;
+  background: black;
+}
+
+.ui-image-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.ui-image-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ui-image-action-color);
+  cursor: pointer;
+  transition:
+    background var(--ui-transition-duration),
+    color var(--ui-transition-duration);
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:enabled:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--ui-image-action-hover-color);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: var(--ui-focus-ring-width) var(--ui-focus-ring-style) var(--ui-focus-ring-color);
+    outline-offset: var(--ui-focus-ring-offset);
+  }
+}
+
+.ui-image-original {
+  max-width: 100vw;
+  max-height: 100vh;
+  transition: transform 300ms;
+  animation: ui-image-original-enter 300ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@keyframes ui-image-original-enter {
+  from {
+    opacity: 0;
+    scale: 0.93;
+  }
+}
+
+.ui-image-mask.ui-image-leave {
+  animation: ui-image-mask-leave 150ms ease-in forwards;
+  pointer-events: none;
+
+  .ui-image-original {
+    animation: ui-image-original-leave 150ms ease-in forwards;
+  }
+}
+
+@keyframes ui-image-mask-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes ui-image-original-leave {
+  to {
+    scale: 0.93;
+  }
+}

@@ -4,11 +4,15 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { StaticConfigService } from './static.config.service';
 
+const lastLoginRedirectKey = 'last-login-redirect';
+const loginRedirectCooldownMs = 15000;
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private authConfig!: any;
+  private isLoginPending = false;
 
   private isAuthenticatedSubject$ = new BehaviorSubject<boolean>(false);
   isAuthenticated$ = this.isAuthenticatedSubject$.asObservable();
@@ -31,7 +35,6 @@ export class AuthService {
       scope: 'openid profile email api offline_access',
       showDebugInformation: true,
       clearHashAfterLogin: true,
-      useSilentRefresh: true,
       timeoutFactor: 0.95,
     };
 
@@ -59,10 +62,21 @@ export class AuthService {
   }
 
   login() {
-    this.oauthService.initCodeFlow();
+    if (this.isLoginPending) {
+      return;
+    }
+    this.isLoginPending = true;
+
+    const lastLoginAt = Number(sessionStorage.getItem(lastLoginRedirectKey) ?? 0);
+    const delay = Math.max(0, lastLoginAt + loginRedirectCooldownMs - Date.now());
+    setTimeout(() => {
+      sessionStorage.setItem(lastLoginRedirectKey, String(Date.now()));
+      this.oauthService.initCodeFlow();
+    }, delay);
   }
 
   logout() {
+    sessionStorage.removeItem(lastLoginRedirectKey);
     this.oauthService.logOut();
   }
 

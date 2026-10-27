@@ -1,5 +1,14 @@
-import { Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChildren,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ApiService } from '../../services/api.service';
+import { ExerciseCompletionsService } from '../../services/exercise-completions.service';
+import { ExerciseTypeEnum } from '../../enums/exercise-type.enum';
 import { finalize, take } from 'rxjs/operators';
 import {
   CrosswordBoardCell,
@@ -15,24 +24,23 @@ import { WordLearningProgressEnum } from '../../enums/word-learning-progress.enu
 
 import { StarComponent } from '../star/star';
 import { FormsModule } from '@angular/forms';
+import { SvgIconComponent } from 'angular-svg-icon';
+import { TooltipDirective } from '../../ui/tooltip';
 import { ExerciseResultComponent } from '../exercise-result/exercise-result';
-import { TableModule } from 'primeng/table';
-import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
+import { ExerciseUnavailableComponent } from '../exercise-unavailable/exercise-unavailable';
 
 @Component({
   selector: 'app-crossword-exercise',
   imports: [
     FormsModule,
-    TableModule,
-    InputTextModule,
-    ButtonModule,
-    RippleModule,
+    SvgIconComponent,
+    TooltipDirective,
     StarComponent,
-    ExerciseResultComponent
-],
+    ExerciseResultComponent,
+    ExerciseUnavailableComponent,
+  ],
   templateUrl: './crossword-exercise.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./crossword-exercise.scss'],
 })
 export class CrosswordExerciseComponent implements OnInit {
@@ -44,15 +52,16 @@ export class CrosswordExerciseComponent implements OnInit {
   showResult = false;
   exerciseWordStatistics: ExerciseWordStatistic[] = [];
   isBusy = false;
+  isUnavailable = false;
   @ViewChildren('cell') cells?: QueryList<ElementRef>;
   private direction: DirectionEnum | null = null;
   private isCellFocusedAutomatically = false;
   private arrowKeyDownHorizontalPosition: number | null = null;
   private finishSound: HTMLAudioElement = new Audio();
-  private successSound: HTMLAudioElement = new Audio();
 
   constructor(
     private readonly apiService: ApiService,
+    private readonly exerciseCompletionsService: ExerciseCompletionsService,
     private readonly userStatisticsService: UserStatisticsService,
     private readonly soundService: SoundService,
   ) {}
@@ -71,6 +80,7 @@ export class CrosswordExerciseComponent implements OnInit {
     this.exerciseWordStatistics = [];
     this.isCellFocusedAutomatically = false;
     this.arrowKeyDownHorizontalPosition = null;
+    this.isUnavailable = false;
     this.isBusy = true;
     this.apiService
       .getCrosswordExercise()
@@ -80,7 +90,8 @@ export class CrosswordExerciseComponent implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          this.crosswordModel = data;
+          this.isUnavailable = !data.horizontalWords.length && !data.verticalWords.length;
+          this.crosswordModel = this.isUnavailable ? null : data;
         },
         error: (error) => {
           console.log(error);
@@ -179,7 +190,9 @@ export class CrosswordExerciseComponent implements OnInit {
             const prevCell = this.crosswordModel.board[y - 1][x];
             if (prevCellRef && prevCell) {
               this.isCellFocusedAutomatically = true;
-              prevCell.answer = '';
+              if (!prevCell.isLocked) {
+                prevCell.answer = '';
+              }
               prevCellRef.nativeElement.focus();
             }
           } else if (this.direction == DirectionEnum.Horizontal && x > 0) {
@@ -187,7 +200,9 @@ export class CrosswordExerciseComponent implements OnInit {
             const prevCell = this.crosswordModel.board[y][x - 1];
             if (prevCellRef && prevCell) {
               this.isCellFocusedAutomatically = true;
-              prevCell.answer = '';
+              if (!prevCell.isLocked) {
+                prevCell.answer = '';
+              }
               prevCellRef.nativeElement.focus();
             }
           }
@@ -206,6 +221,7 @@ export class CrosswordExerciseComponent implements OnInit {
       const cellRef = this.cells.get(this.crosswordModel.board.length * y + x);
       if (
         cellRef &&
+        !cell.isLocked &&
         cellRef.nativeElement.selectionStart == 0 &&
         cellRef.nativeElement.selectionEnd == 0
       ) {
@@ -335,57 +351,163 @@ export class CrosswordExerciseComponent implements OnInit {
   }
 
   onComplete() {
-    this.isCompleted = true;
-
-    if (this.crosswordModel) {
-      for (const word of this.crosswordModel.verticalWords) {
-        word.answer = '';
-        let y = word.startY;
-        do {
-          const cell = this.crosswordModel.board[y][word.startX];
-          if (!cell || !cell.answer) {
-            break;
-          }
-          word.answer += cell.answer;
-          y++;
-        } while (y < this.crosswordModel.board.length);
-      }
-
-      for (const word of this.crosswordModel.horizontalWords) {
-        word.answer = '';
-        let x = word.startX;
-        do {
-          const cell = this.crosswordModel.board[word.startY][x];
-          if (!cell || !cell.answer) {
-            break;
-          }
-          word.answer += cell.answer;
-          x++;
-        } while (x < this.crosswordModel.board[0].length);
-      }
-
-      const result: ExerciseWordResult[] = [];
-      const words = this.crosswordModel.horizontalWords.concat(this.crosswordModel.verticalWords);
-      for (const word of words) {
-        result.push(new ExerciseWordResult(word.wordId, word.value === word.answer));
-      }
-
-      this.apiService
-        .putExerciseResults(result)
-        .pipe(take(1))
-        .subscribe({
-          next: () => {
-            this.userStatisticsService.refresh();
-          },
-          error: (error) => {
-            console.log(error);
-          },
-        });
-
-      result.filter((r) => !r.isCorrectAnswer).length == 0
-        ? this.soundService.success()
-        : this.soundService.finish();
+    if (!this.crosswordModel || this.isCompleted) {
+      return;
     }
+
+    const openWords = this.allWords.filter((word) => !word.status);
+
+    for (const word of openWords) {
+      word.answer = '';
+      for (const { cell } of this.getWordCells(word)) {
+        if (!cell.answer) {
+          break;
+        }
+        word.answer += cell.answer;
+      }
+      word.status = this.isWordCorrect(word) ? 'correct' : 'wrong';
+    }
+
+    this.saveResults(openWords);
+    this.finishExercise();
+  }
+
+  get checkIcon() {
+    const word = this.checkableWord;
+    const board = this.crosswordModel?.board;
+
+    if (!word || !board || !this.cells) {
+      return null;
+    }
+
+    const target = this.getCheckCell(word);
+    const input: HTMLElement | undefined = target
+      ? this.cells.get(board.length * target.y + target.x)?.nativeElement
+      : undefined;
+
+    return input
+      ? {
+          top: input.offsetTop,
+          left: input.offsetLeft,
+          width: input.offsetWidth,
+          height: input.offsetHeight,
+        }
+      : null;
+  }
+
+  onCheckWord() {
+    const word = this.checkableWord;
+
+    if (word) {
+      this.settleWord(word);
+    }
+  }
+
+  onCellChange(cell: CrosswordBoardCell, y: number, x: number, value: string) {
+    if (cell.isLocked) {
+      return;
+    }
+    cell.answer = value;
+  }
+
+  private get allWords() {
+    return this.crosswordModel
+      ? this.crosswordModel.horizontalWords.concat(this.crosswordModel.verticalWords)
+      : [];
+  }
+
+  private getWordCells(word: CrosswordWordModel) {
+    const isHorizontal = !!this.crosswordModel?.horizontalWords.includes(word);
+
+    return [...word.value].map((_, index) => {
+      const y = isHorizontal ? word.startY : word.startY + index;
+      const x = isHorizontal ? word.startX + index : word.startX;
+
+      return { cell: this.crosswordModel!.board[y][x], y, x };
+    });
+  }
+
+  private get checkableWord() {
+    if (this.isCompleted || this.activeWordId === null) {
+      return null;
+    }
+
+    const word = this.allWords.find((item) => item.wordId === this.activeWordId);
+
+    return word && !word.status && this.getWordCells(word).every(({ cell }) => !!cell.answer)
+      ? word
+      : null;
+  }
+
+  private getCheckCell(word: CrosswordWordModel) {
+    const board = this.crosswordModel!.board;
+    const isHorizontal = this.crosswordModel!.horizontalWords.includes(word);
+    const length = word.value.length;
+    const after = isHorizontal
+      ? { y: word.startY, x: word.startX + length }
+      : { y: word.startY + length, x: word.startX };
+    const before = isHorizontal
+      ? { y: word.startY, x: word.startX - 1 }
+      : { y: word.startY - 1, x: word.startX };
+    const isInBoard = (point: { y: number; x: number }) =>
+      point.y >= 0 && point.x >= 0 && point.y < board.length && point.x < board[0].length;
+    const isFree = (point: { y: number; x: number }) =>
+      isInBoard(point) && !board[point.y][point.x];
+
+    return [after, before].find(isFree) ?? [after, before].find(isInBoard) ?? null;
+  }
+
+  private settleWord(word: CrosswordWordModel) {
+    const cells = this.getWordCells(word);
+
+    word.answer = cells.map(({ cell }) => cell.answer).join('');
+    word.status = this.isWordCorrect(word) ? 'correct' : 'wrong';
+
+    cells.forEach(({ cell }, index) => {
+      if (!this.isSame(cell.answer, word.value[index])) {
+        cell.answer = word.value[index];
+        cell.isRevealed = true;
+      }
+      cell.isLocked = true;
+    });
+
+    this.saveResults([word]);
+
+    if (this.allWords.every((item) => item.status)) {
+      this.finishExercise();
+      return;
+    }
+
+    word.status === 'correct' ? this.soundService.correct() : this.soundService.error();
+  }
+
+  private saveResults(words: CrosswordWordModel[]) {
+    if (!words.length) {
+      return;
+    }
+
+    this.apiService
+      .putExerciseResults(
+        words.map((word) => new ExerciseWordResult(word.wordId, word.status === 'correct')),
+      )
+      .pipe(take(1))
+      .subscribe({
+        next: () => this.userStatisticsService.refresh(),
+        error: (error) => console.log(error),
+      });
+  }
+
+  private finishExercise() {
+    if (this.isCompleted) {
+      return;
+    }
+
+    this.isCompleted = true;
+    this.activeWordId = null;
+    this.exerciseCompletionsService.markCompleted(ExerciseTypeEnum.Crossword);
+    this.allWords.every((word) => word.status === 'correct')
+      ? this.soundService.celebrate()
+      : this.soundService.finish();
   }
 
   onShowResult() {
@@ -396,7 +518,7 @@ export class CrosswordExerciseComponent implements OnInit {
 
     const words = this.crosswordModel.horizontalWords.concat(this.crosswordModel.verticalWords);
     for (const word of words) {
-      const isCorrectAnswer = word.value === word.answer;
+      const isCorrectAnswer = this.isWordCorrect(word);
       let newWordLearningProgress = word.wordLearningProgress;
       if (isCorrectAnswer && newWordLearningProgress < WordLearningProgressEnum.Three) {
         newWordLearningProgress++;
@@ -425,6 +547,14 @@ export class CrosswordExerciseComponent implements OnInit {
 
   onRepeat() {
     this.startExercise();
+  }
+
+  isWordCorrect(word: CrosswordWordModel) {
+    return this.isSame(word.answer, word.value);
+  }
+
+  isSame(answer: string | null | undefined, value: string) {
+    return (answer ?? '').toLocaleLowerCase() === value.toLocaleLowerCase();
   }
 
   private setActiveWordId(y: number, x: number) {

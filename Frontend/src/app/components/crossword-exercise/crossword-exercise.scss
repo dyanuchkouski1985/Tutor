@@ -70,8 +70,21 @@
     box-sizing: border-box;
 
     .content {
-      width: 1000px;
+      width: max-content;
+      position: relative;
       margin: 0 auto;
+
+      .check-word-icon {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ::ng-deep svg {
+          width: 34px;
+          height: 34px;
+        }
+      }
 
       input {
         width: 64px;
@@ -79,8 +92,8 @@
         text-align: center;
         border-width: 2px;
 
-        &.p-component:disabled {
-          opacity: 1;
+        &[readonly] {
+          cursor: not-allowed;
         }
 
         &.hidden {

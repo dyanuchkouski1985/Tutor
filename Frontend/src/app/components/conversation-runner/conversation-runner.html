@@ -1,0 +1,241 @@
+<div class="conversation-runner-container">
+  <div class="header-container">
+    <svg-icon
+      src="../../../assets/images/svg/home.svg"
+      class="back-icon svg-icon-size-large pointer"
+      appTooltip="Back to conversations"
+      tooltipPosition="bottom"
+      (click)="onBack()"
+    ></svg-icon>
+
+    <div class="title">{{ conversation?.title }}</div>
+    <div class="context">{{ conversation?.context }}</div>
+  </div>
+
+  <div class="transcript-container" #transcript (scroll)="onSelectionChange()">
+    @for (message of messages; track message.id) {
+      <div
+        class="message"
+        [class.user-message]="message.isUser"
+        [ngClass]="message.isUser ? '' : participantClass(message.participantId)"
+      >
+        <div class="message-header">
+          <div
+            class="speaker-name"
+            [appTooltip]="participantDescription(message.participantId)"
+            tooltipPosition="bottom"
+          >
+            {{ message.participantName }}
+          </div>
+
+          @if (message.validationStatus !== messageValidationStatusEnum.NotApplicable) {
+            <svg-icon
+              class="verdict-icon svg-icon-size-medium"
+              [class.verdict-ok]="message.validationStatus === messageValidationStatusEnum.Ok"
+              [class.verdict-errors]="
+                message.validationStatus === messageValidationStatusEnum.HasErrors
+              "
+              [src]="verdictIconSrc(message.validationStatus)"
+              [appTooltip]="message.validationSummary"
+              tooltipPosition="bottom"
+            ></svg-icon>
+          }
+
+          @if (
+            message.validationStatus === messageValidationStatusEnum.Ok ||
+            message.validationStatus === messageValidationStatusEnum.HasErrors
+          ) {
+            <div
+              class="message-points"
+              [class.spent]="!message.points"
+              [appTooltip]="message.points ? 'Points earned' : 'Daily conversation limit reached'"
+              tooltipPosition="bottom"
+            >
+              {{ message.points }}/{{ conversationConstants.MAX_MESSAGE_POINTS }}
+            </div>
+          }
+
+          <svg-icon
+            [src]="
+              isSpeaking(message)
+                ? '../../../assets/images/svg/stop.svg'
+                : '../../../assets/images/svg/play.svg'
+            "
+            class="play-icon pointer svg-icon-size-medium"
+            [appTooltip]="isSpeaking(message) ? 'Stop' : 'Play'"
+            tooltipPosition="bottom"
+            (click)="onSpeakMessage(message)"
+          ></svg-icon>
+        </div>
+
+        <div class="message-text">{{ message.text }}</div>
+
+        @if (message.validationSummary) {
+          <div
+            class="validation-summary"
+            [class.pointer]="message.validationErrors.length"
+            (click)="onToggleValidation(message.id)"
+          >
+            <span>{{ message.validationSummary }}</span>
+
+            @if (message.validationErrors.length) {
+              <svg-icon
+                class="collapse-icon svg-icon-size-medium"
+                [src]="
+                  isValidationCollapsed(message.id)
+                    ? '../../../assets/images/svg/sort-down.svg'
+                    : '../../../assets/images/svg/sort-up.svg'
+                "
+                [appTooltip]="isValidationCollapsed(message.id) ? 'Show details' : 'Hide details'"
+                tooltipPosition="bottom"
+              ></svg-icon>
+            }
+          </div>
+        }
+
+        @if (message.validationErrors.length && !isValidationCollapsed(message.id)) {
+          <ul class="validation-errors">
+            @for (validationError of message.validationErrors; track validationError.fragment) {
+              <li>
+                <span class="fragment">{{ validationError.fragment }}</span>
+                <span class="arrow">&rarr;</span>
+                <span class="correction">{{ validationError.correction }}</span>
+                <span class="explanation">{{ validationError.explanation }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    @if (!messages.length && !isBusy) {
+      <div class="empty-message">
+        {{ isUserTurn ? 'Your turn - say the first line.' : 'Nothing said yet.' }}
+      </div>
+    }
+  </div>
+
+  @if (error) {
+    <div class="error-container">
+      <span>{{ error }}</span>
+      @if (isTurnFailed) {
+        <svg-icon
+          src="../../../assets/images/svg/repeat.svg"
+          class="retry-icon pointer svg-icon-size-medium"
+          appTooltip="Try again"
+          tooltipPosition="top"
+          (click)="onRetryTurns()"
+        ></svg-icon>
+      }
+    </div>
+  }
+
+  <div class="answer-container" #answer>
+    @if (isFormatting) {
+      <div class="interim-text">Cleaning up what you said...</div>
+    } @else if (isListening) {
+      <div class="interim-text">{{ listeningText }}</div>
+    }
+
+    <div class="ui-inputgroup answer-text-container">
+      @if (speechService.isListeningSupported) {
+        <button
+          type="button"
+          class="ui-button microphone-button"
+          [class.listening]="isListening"
+          [disabled]="!isUserTurn || isBusy"
+          [appTooltip]="isListening ? 'Stop listening' : 'Speak'"
+          [tooltipDisabled]="!isUserTurn || isBusy"
+          tooltipPosition="top"
+          (click)="onMicrophone()"
+        >
+          <svg-icon
+            src="../../../assets/images/svg/speech.svg"
+            class="button-primary-color svg-icon-size-medium"
+          ></svg-icon>
+        </button>
+      }
+
+      <div class="ui-floatlabel">
+        <textarea
+          class="ui-input"
+          [(ngModel)]="pendingText"
+          [maxlength]="conversationConstants.MESSAGE_MAX_LENGTH"
+          [disabled]="!isUserTurn || isBusy"
+          appAutoResize
+          name="pendingText"
+          id="pending-text-input"
+          rows="2"
+          (keydown.enter)="$event.preventDefault(); onSend()"
+          placeholder=" "
+        ></textarea>
+        <label for="pending-text-input">
+          {{ isUserTurn ? 'Your line' : 'Waiting for the others...' }}
+        </label>
+      </div>
+
+      @if (!conversation?.autoFormat) {
+        <button
+          type="button"
+          class="ui-button format-button"
+          [disabled]="!canFormat"
+          appTooltip="AI format - fixes punctuation, capital letters and misheard words"
+          tooltipPosition="top"
+          (click)="onFormat()"
+        >
+          <svg-icon
+            src="../../../assets/images/svg/edit.svg"
+            class="button-primary-color svg-icon-size-medium"
+          ></svg-icon>
+        </button>
+      }
+
+      <button type="submit" class="ui-button" [disabled]="!canSend" (click)="onSend()">
+        <svg-icon
+          src="../../../assets/images/svg/arrow-right.svg"
+          class="button-primary-color svg-icon-size-medium"
+        ></svg-icon>
+      </button>
+
+      @if (speechService.isListeningSupported) {
+        <button
+          type="button"
+          class="ui-button cancel-listening-button"
+          [class.invisible]="!isListening"
+          [disabled]="!isListening"
+          appTooltip="Discard what you just said"
+          tooltipPosition="top"
+          (click)="onCancelListening()"
+        >
+          <svg-icon
+            src="../../../assets/images/svg/cross.svg"
+            class="button-primary-color svg-icon-size-medium"
+          ></svg-icon>
+        </button>
+      }
+    </div>
+
+    @if (!speechService.isListeningSupported) {
+      <div class="unsupported-message">
+        This browser cannot listen to speech. Type your line instead.
+      </div>
+    }
+  </div>
+</div>
+
+@if (selectedText) {
+  <svg-icon
+    #selectionIcon
+    src="../../../assets/images/svg/arrow-up-right.svg"
+    class="selected-text-icon pointer svg-icon-size-medium"
+    [style.top.px]="selectionTop"
+    [style.left.px]="selectionLeft"
+    [style.clip-path]="selectionIconClip"
+    appTooltip="Open in words"
+    tooltipPosition="top"
+    (mousedown)="$event.preventDefault()"
+    (click)="onOpenWordTranslationsDialog()"
+  ></svg-icon>
+}
+
+<app-scroll-top [threshold]="1500" />

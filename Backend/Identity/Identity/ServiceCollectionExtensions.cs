@@ -9,7 +9,7 @@ public static class ServiceCollectionExtensions
 {
     internal static void AddIdentityServices(this IServiceCollection services)
     {
-        services.AddDefaultIdentity<IdentityUser>(options =>
+        services.AddDefaultIdentity<ApplicationUser>(options =>
         {
             options.SignIn.RequireConfirmedAccount = true;
             options.SignIn.RequireConfirmedEmail = true;

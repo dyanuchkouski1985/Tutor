@@ -19,11 +19,7 @@ public class ExercisesController(
     [Route("[action]")]
     public async Task<IActionResult> TranslationsWord(Language language)
     {
-        GetExerciseWordsRequest request = new()
-        {
-            Language = language
-        };
-        return Ok(await wordExerciseService.GetAsync(request));
+        return Ok(await wordExerciseService.GetExerciseAsync(language));
     }
 
     [HttpGet]

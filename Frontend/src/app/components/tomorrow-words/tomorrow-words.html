@@ -1,0 +1,82 @@
+<div class="tomorrow-words">
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (isFinished) {
+    <div class="summary">That's all for today. See them again tomorrow!</div>
+    <div class="cards">
+      @for (item of words; track item.wordId) {
+        <app-word-card
+          [word]="item.word"
+          [translations]="item.translations.join('; ')"
+          [usages]="item.usages"
+          [pictureIds]="item.pictureIds"
+          [wordLearningProgress]="item.wordLearningProgress"
+          [isAnyNewPictureAvailable]="item.isAnyNewPictureAvailable"
+          (play)="onPlayWord(item)"
+          (open)="onOpenWordTranslationsDialog(item)"
+        ></app-word-card>
+      }
+    </div>
+    <div class="buttons">
+      <button type="button" class="ui-button ui-button-success" (click)="onRepeat()">Repeat</button>
+      <button type="button" class="ui-button back" (click)="onHome()">Home</button>
+    </div>
+  } @else if (word) {
+    <div class="progressbar-container">
+      <app-progress-bar [value]="progressPercent"
+        ><span>{{ index }}/{{ words.length }}</span></app-progress-bar
+      >
+    </div>
+
+    <div class="word-container">
+      <app-star [wordLearningProgress]="word.wordLearningProgress"></app-star>
+      <span class="word selectable">{{ word.word }}</span>
+      <svg-icon
+        src="../../../assets/images/svg/play.svg"
+        class="play-icon svg-icon-size-medium pointer"
+        (click)="onPlay()"
+      ></svg-icon>
+    </div>
+
+    @if (isRevealed) {
+      <div class="translations">{{ word.translations.join('; ') }}</div>
+      @if (word.usages.length) {
+        <ul class="usages">
+          @for (usage of word.usages; track $index) {
+            <li [innerHTML]="usage | highlightWord: word.word"></li>
+          }
+        </ul>
+      }
+      @if (word.pictureIds.length) {
+        <div class="pictures">
+          @for (pictureId of word.pictureIds; track pictureId) {
+            <app-image [src]="staticConfigService.pictureUrl(pictureId)" preview></app-image>
+          }
+        </div>
+      }
+      <div class="buttons">
+        <button type="button" class="ui-button ui-button-success" (click)="onNext()">
+          {{ index < words.length - 1 ? 'Next' : 'Finish' }}
+        </button>
+      </div>
+    } @else {
+      <div class="hint">Try to recall the translation, then check yourself.</div>
+      <div class="buttons">
+        <button type="button" class="ui-button ui-button-success" (click)="onReveal()">Show</button>
+      </div>
+    }
+  } @else if (!isBusy && !error) {
+    <div class="summary">No words with 0–2 stars to repeat.</div>
+    <div class="buttons">
+      <button type="button" class="ui-button back" (click)="onHome()">Home</button>
+    </div>
+  }
+</div>
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

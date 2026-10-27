@@ -1,0 +1,82 @@
+.ui-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+  padding: var(--ui-field-padding-y) var(--ui-field-padding-x);
+  border: 1px solid var(--ui-button-background);
+  border-radius: var(--ui-field-radius);
+  outline-color: transparent;
+  background: var(--ui-button-background);
+  color: var(--ui-button-color);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--ui-transition-duration),
+    color var(--ui-transition-duration),
+    border-color var(--ui-transition-duration),
+    outline-color var(--ui-transition-duration),
+    box-shadow var(--ui-transition-duration);
+
+  &:not(:disabled):hover {
+    background: var(--ui-button-hover-background);
+    border-color: var(--ui-button-hover-background);
+  }
+
+  &:not(:disabled):active {
+    background: var(--ui-button-active-background);
+    border-color: var(--ui-button-active-background);
+  }
+
+  &:focus-visible {
+    outline: var(--ui-focus-ring-width) var(--ui-focus-ring-style) var(--ui-button-background);
+    outline-offset: var(--ui-focus-ring-offset);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &.ui-button-success {
+    background: var(--ui-button-success-background);
+    border-color: var(--ui-button-success-background);
+    color: var(--ui-button-success-color);
+
+    &:not(:disabled):hover {
+      background: var(--ui-button-success-hover-background);
+      border-color: var(--ui-button-success-hover-background);
+    }
+
+    &:not(:disabled):active {
+      background: var(--ui-button-success-active-background);
+      border-color: var(--ui-button-success-active-background);
+    }
+
+    &:focus-visible {
+      outline-color: var(--ui-button-success-background);
+    }
+  }
+
+  &.ui-button-outlined {
+    background: transparent;
+    border-color: var(--ui-button-outlined-border-color);
+    color: var(--ui-primary-color);
+
+    &:not(:disabled):hover {
+      background: var(--ui-button-outlined-hover-background);
+      border-color: var(--ui-button-outlined-border-color);
+    }
+
+    &:not(:disabled):active {
+      background: var(--ui-button-outlined-active-background);
+      border-color: var(--ui-button-outlined-border-color);
+    }
+  }
+}

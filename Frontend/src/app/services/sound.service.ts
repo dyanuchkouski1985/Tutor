@@ -1,5 +1,7 @@
 import { DynamicConfigService } from './dynamic.config.service';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
+import { launchSuccessFireworks } from '../core/fireworks';
+import { CelebrationService } from './celebration.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,10 +13,13 @@ export class SoundService {
   deleteSound = new Audio();
   finishSound = new Audio();
   clockTickingSound = new Audio();
-  successSound = new Audio();
   helpSound = new Audio();
 
-  constructor(public readonly dynamicConfigService: DynamicConfigService) {
+  constructor(
+    public readonly dynamicConfigService: DynamicConfigService,
+    private readonly ngZone: NgZone,
+    private readonly celebrationService: CelebrationService,
+  ) {
     this.correctSound.src = '../assets/sounds/correct.mp3';
     this.correctSound.load();
     this.errorSound.src = '../assets/sounds/error.mp3';
@@ -27,8 +32,6 @@ export class SoundService {
     this.clockTickingSound.load();
     this.finishSound.src = '../assets/sounds/finish.mp3';
     this.finishSound.load();
-    this.successSound.src = '../assets/sounds/success.mp3';
-    this.successSound.load();
     this.helpSound.src = '../assets/sounds/help.mp3';
     this.helpSound.load();
   }
@@ -56,14 +59,18 @@ export class SoundService {
 
   finish() {
     !this.dynamicConfigService.muteSound && this.finishSound.play();
+    this.celebrationService.nudge();
   }
 
   error() {
     !this.dynamicConfigService.muteSound && this.errorSound.play();
   }
 
-  success() {
-    !this.dynamicConfigService.muteSound && this.successSound.play();
+  celebrate() {
+    this.ngZone.runOutsideAngular(() =>
+      launchSuccessFireworks(!this.dynamicConfigService.muteSound),
+    );
+    this.celebrationService.nudge();
   }
 
   help() {

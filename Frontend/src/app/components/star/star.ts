@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { WordLearningProgressEnum } from '../../enums/word-learning-progress.enum';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-star',
   imports: [CommonModule, SvgIconComponent],
   templateUrl: './star.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./star.scss'],
 })
 export class StarComponent {

@@ -1,46 +1,43 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Router } from '@angular/router';
-import { StaticConfigService } from '../../services/static.config.service';
 import { ExerciseWordStatistic } from '../../models/exercise-word-statistic';
 import { WordTranslationsDialogComponent } from '../word-translations-dialog/word-translations-dialog';
 import { Subscription } from 'rxjs';
-import { DialogService } from 'primeng/dynamicdialog';
+import { DialogService } from '../../ui/dialog';
 import { WordTranslations } from '../../models/word-translations';
 import { ApiService } from '../../services/api.service';
+import { UserStatisticsService } from '../../services/user-statistics.service';
+import { CelebrationService } from '../../services/celebration.service';
+import { ExerciseAvailabilityFlag, UserStatistics } from '../../models/user-statistics';
 
 import { SvgIconComponent } from 'angular-svg-icon';
-import { TableModule } from 'primeng/table';
-import { HighlightWordPipe } from '../../pipes/highlightWord';
-import { StarComponent } from '../star/star';
-import { ImageModule } from 'primeng/image';
-import { ButtonModule } from 'primeng/button';
-import { TooltipModule } from 'primeng/tooltip';
-import { RippleModule } from 'primeng/ripple';
+import { WordCardComponent } from '../word-card/word-card';
 
 @Component({
   selector: 'app-exercise-result',
-  imports: [
-    TableModule,
-    ImageModule,
-    ButtonModule,
-    TooltipModule,
-    RippleModule,
-    HighlightWordPipe,
-    SvgIconComponent,
-    StarComponent
-],
+  imports: [SvgIconComponent, WordCardComponent],
   templateUrl: './exercise-result.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./exercise-result.scss'],
-  providers: [DialogService],
 })
 export class ExerciseResultComponent implements OnInit, OnDestroy {
   @Output() repeatExerciseEvent = new EventEmitter();
   exerciseWordStatisticsValue: ExerciseWordStatistic[] = [];
   correctAnswers: number = 0;
+  canRepeat = true;
 
   private subscriptions = new Subscription();
 
   @Input() showWrongAnswer = true;
+  @Input() availabilityFlag: ExerciseAvailabilityFlag | null = null;
   @Input() set exerciseWordStatistics(value: ExerciseWordStatistic[]) {
     this.exerciseWordStatisticsValue = value;
     this.correctAnswers = this.exerciseWordStatisticsValue.filter((s) => s.isCorrectAnswer).length;
@@ -50,13 +47,23 @@ export class ExerciseResultComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    public readonly staticConfigService: StaticConfigService,
     private readonly router: Router,
     private readonly apiService: ApiService,
     private readonly dialogService: DialogService,
+    private readonly userStatisticsService: UserStatisticsService,
+    private readonly celebrationService: CelebrationService,
   ) {}
 
   ngOnInit() {
+    this.celebrationService.nudge();
+    this.updateCanRepeat(this.userStatisticsService.get());
+    this.subscriptions.add(
+      this.userStatisticsService.userStatisticsObservable.subscribe((userStatistics) =>
+        this.updateCanRepeat(userStatistics),
+      ),
+    );
+    this.userStatisticsService.refresh();
+
     window.scroll({
       top: 0,
       left: 0,
@@ -71,7 +78,13 @@ export class ExerciseResultComponent implements OnInit, OnDestroy {
   }
 
   onRepeat() {
-    this.repeatExerciseEvent.emit();
+    if (this.canRepeat) {
+      this.repeatExerciseEvent.emit();
+    }
+  }
+
+  private updateCanRepeat(userStatistics: UserStatistics) {
+    this.canRepeat = !this.availabilityFlag || userStatistics[this.availabilityFlag] !== false;
   }
 
   onHome() {
@@ -81,13 +94,8 @@ export class ExerciseResultComponent implements OnInit, OnDestroy {
   onOpenWordTranslationsDialog(exerciseWordStatistic: ExerciseWordStatistic) {
     this.dialogService.open(WordTranslationsDialogComponent, {
       header: 'Word',
-      modal: true,
-      dismissableMask: true,
-      baseZIndex: 10000,
-      showHeader: true,
-      closable: true,
-      closeOnEscape: true,
       styleClass: 'word-translations-dialog',
+      waitUntilReady: true,
       data: {
         word: exerciseWordStatistic.reverted
           ? exerciseWordStatistic.translations[0]

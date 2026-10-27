@@ -77,9 +77,26 @@ public class RepeatPausedWordsExerciseService(TutorContext dbContext, ISecurityC
             completedWords = await GetExerciseWordsAsync(WordLearningProgress.Completed,
                 GeneralConstants.RepeatWordsExerciseWordsCount - pausedWords.Count);
 
-        return completedWords
+        var result = completedWords
             .Union(pausedWords)
             .ToList();
+
+        return result.Count < GeneralConstants.RepeatWordsExerciseWordsCount ? [] : result;
+    }
+
+    public Task<int> CountAvailableWordsAsync(Language language)
+    {
+        var pausedBefore = DateTime.Now.AddDays(-GeneralConstants.RepeatWordsLearnedGreaterThanDays);
+        var completedBefore = DateTime.Now.AddDays(-GeneralConstants.CompletedWordsLearnedGreaterThanDays);
+
+        return dbContext.Words.CountAsync(w =>
+            w.Language == language
+            && w.Translations.Any(t => t.UserTranslations.Any(ut => ut.UserId == userId))
+            && w.UserWordLearningProgresses.Any(uwlp =>
+                uwlp.UserId == userId
+                && (uwlp.WordLearningProgress == WordLearningProgress.Paused && uwlp.LastLearningDate < pausedBefore
+                    || uwlp.WordLearningProgress == WordLearningProgress.Completed
+                    && uwlp.LastLearningDate < completedBefore)));
     }
 
     public async Task PutAsync(List<PutExerciseWordResult> exerciseResults)
@@ -87,24 +104,7 @@ public class RepeatPausedWordsExerciseService(TutorContext dbContext, ISecurityC
         var language =
             (await dbContext.Words.FirstOrDefaultAsync(w => w.Id == exerciseResults.First().WordId))?.Language ??
             Language.English;
-        var now = DateOnly.FromDateTime(DateTime.Now);
-        var userStatistic =
-            await dbContext.UserStatistics.FirstOrDefaultAsync(us =>
-                us.UserId == userId && us.Language == language && us.Date == now);
-
-        if (userStatistic == null)
-        {
-            userStatistic = new UserStatistic
-            {
-                UserId = userId,
-                Language = language,
-                Percentage = default,
-                Date = now
-            };
-            await dbContext.UserStatistics.AddAsync(userStatistic);
-        }
-
-        decimal newStatisticPoints = 0;
+        var userStatistic = await dbContext.GetOrCreateTodayStatisticAsync(userId, language);
 
         var wordIds = exerciseResults.Select(r => r.WordId).Distinct().ToList();
         var userWordLearningProgresses = await dbContext.UserWordLearningProgresses
@@ -128,12 +128,14 @@ public class RepeatPausedWordsExerciseService(TutorContext dbContext, ISecurityC
             userWordLearningProgress.LastLearningDate = DateTime.UtcNow;
 
             if (exerciseWordResult.IsCorrectAnswer)
-                newStatisticPoints += 0.5M;
+            {
+                if (userStatistic.HasRepeatHalfPoint)
+                    userStatistic.Percentage += GeneralConstants.RepeatWordsCorrectAnswerPoints;
+                userStatistic.HasRepeatHalfPoint = !userStatistic.HasRepeatHalfPoint;
+            }
             else
                 userWordLearningProgress.WordLearningProgress = WordLearningProgress.Two;
         }
-
-        userStatistic.Percentage += (int)Math.Floor(newStatisticPoints);
 
         await dbContext.SaveChangesAsync();
     }

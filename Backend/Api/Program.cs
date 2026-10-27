@@ -1,6 +1,8 @@
+using Api.Ai;
 using Api.Auth;
 using Api.Cors;
 using Api.Infrastructure;
+using Api.Speech;
 using Api.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,8 @@ services.AddControllers();
 services.AddAuthServices(builder.Configuration);
 services.AddSwaggerServices(builder.Configuration);
 services.AddCorsServices(builder.Configuration);
+services.AddAnthropicServices(builder.Configuration);
+services.AddDeepgramServices(builder.Configuration);
 
 var app = builder.Build();
 

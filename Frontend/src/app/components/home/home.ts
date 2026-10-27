@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { DialogService } from 'primeng/dynamicdialog';
+import { DialogService } from '../../ui/dialog';
 import { DynamicConfigService } from '../../services/dynamic.config.service';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
@@ -10,11 +10,9 @@ import { WordTranslationsDialogComponent } from '../word-translations-dialog/wor
 import { Subscription } from 'rxjs';
 import { WordTranslationsPage } from '../../models/wordTranslationsPage';
 import { WordLearningProgressEnum } from '../../enums/word-learning-progress.enum';
-import { UserStatistics } from '../../models/user-statistics';
+import { ExerciseAvailabilityFlag, UserStatistics } from '../../models/user-statistics';
 import { StaticConfigService } from '../../services/static.config.service';
 import { finalize, take } from 'rxjs/operators';
-import { SortEvent } from 'primeng/api';
-import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { WordTranslationsFieldsConstants } from '../../constants/word-translations-fields.constants';
 import { AppConstants } from '../../constants/app.constants';
 import { WordTranslations } from '../../models/word-translations';
@@ -22,51 +20,42 @@ import { SoundService } from '../../services/sound.service';
 import { CommonModule } from '@angular/common';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { StarComponent } from '../star/star';
-import { PopoverModule } from 'primeng/popover';
-import { TooltipModule } from 'primeng/tooltip';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { SkeletonModule } from 'primeng/skeleton';
-import { ImageModule } from 'primeng/image';
+import { PopoverComponent } from '../../ui/popover';
+import { TooltipDirective } from '../../ui/tooltip';
 import { FormsModule } from '@angular/forms';
 import { JoinPropertiesPipe } from '../../pipes/joinProperties';
-import { HighlightWordPipe } from '../../pipes/highlightWord';
-import { ScrollTopModule } from 'primeng/scrolltop';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { AutoFocusModule } from 'primeng/autofocus';
 import { ThemeSwitcher } from '../theme-switcher/theme-switcher';
-import { RippleModule } from 'primeng/ripple';
+import { LanguageLevelEnum } from '../../enums/language-level.enum';
+import { MapPropertyPipe } from '../../pipes/mapProperty';
+import { WordCardComponent } from '../word-card/word-card';
+import { InViewDirective } from '../../directives/in-view';
+import { ScrollTopComponent } from '../../ui/scroll-top';
+import { AutoFocusDirective } from '../../ui/auto-focus';
 
 @Component({
   selector: 'app-home',
   imports: [
-    AutoFocusModule,
+    AutoFocusDirective,
     CommonModule,
     FormsModule,
-    PopoverModule,
-    TooltipModule,
-    InputGroupModule,
-    FloatLabelModule,
-    TableModule,
-    SkeletonModule,
-    ImageModule,
-    ScrollTopModule,
-    ButtonModule,
-    InputTextModule,
-    RippleModule,
+    PopoverComponent,
+    TooltipDirective,
     JoinPropertiesPipe,
-    HighlightWordPipe,
+    MapPropertyPipe,
     ThemeSwitcher,
     SvgIconComponent,
     StarComponent,
+    WordCardComponent,
+    InViewDirective,
+    ScrollTopComponent,
   ],
   templateUrl: './home.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./home.scss'],
-  providers: [DialogService],
 })
 export class HomeComponent {
-  items: WordTranslations[] = [];
+  items: (WordTranslations | undefined)[] = [];
+  itemsVersion = 0;
   searchText = '';
   searchFilterLearningProgresses = [
     WordLearningProgressEnum.Two,
@@ -77,6 +66,20 @@ export class HomeComponent {
   englishLanguage = LanguageEnum.English;
   polishLanguage = LanguageEnum.Polish;
   language: LanguageEnum = this.dynamicConfigService.language;
+  languageLevelEnum = LanguageLevelEnum;
+  languageLevels = Object.values(LanguageLevelEnum).filter(
+    (value): value is LanguageLevelEnum => typeof value === 'number',
+  );
+  languageLevel: LanguageLevelEnum | null = null;
+  pickedLanguageLevel: LanguageLevelEnum | null = null;
+  languageLevelNames: Record<LanguageLevelEnum, string> = {
+    [LanguageLevelEnum.A1]: 'Beginner',
+    [LanguageLevelEnum.A2]: 'Elementary',
+    [LanguageLevelEnum.B1]: 'Intermediate',
+    [LanguageLevelEnum.B2]: 'Upper Int.',
+    [LanguageLevelEnum.C1]: 'Advanced',
+    [LanguageLevelEnum.C2]: 'Proficient',
+  };
   wordIdToDelete: number | null = null;
   wordTranslations: WordTranslationsPage | null = null;
   userStatistics: UserStatistics | null = null;
@@ -85,15 +88,22 @@ export class HomeComponent {
   eventDescriptions: string[] = [];
   sortField: string;
   sortOrder: number;
-  lazyLoadPageSize = 1000;
+  sortOptions = [
+    { field: WordTranslationsFieldsConstants.LAST_LEARNING_DATE, label: 'Learned' },
+    { field: WordTranslationsFieldsConstants.ADDING_DATE, label: 'Added' },
+    { field: WordTranslationsFieldsConstants.VALUE, label: 'Word' },
+    { field: WordTranslationsFieldsConstants.WORD_LEARNING_PROGRESS, label: 'Progress' },
+    { field: WordTranslationsFieldsConstants.PICTURES, label: 'Pictures' },
+  ];
+  pageSize = 100;
   itemsTotalCount = 0;
   isBusy = false;
   isSearchActive = false;
+  isScrollingToTop = false;
 
   private subscriptions = new Subscription();
-  private firstVisibleItemIndex = 0;
-  private loadingItemIndex = 0;
-  private loadingPageSize = this.lazyLoadPageSize;
+  private searchGeneration = 0;
+  private loadedPages = new Set<number>();
 
   constructor(
     public readonly dynamicConfigService: DynamicConfigService,
@@ -115,6 +125,7 @@ export class HomeComponent {
       }),
     );
     this.initEventDescriptions();
+    this.loadLanguageLevel();
   }
 
   onFilterClick(learningProgress: WordLearningProgressEnum) {
@@ -160,69 +171,37 @@ export class HomeComponent {
       return;
     }
 
-    this.firstVisibleItemIndex = 0;
-    this.loadingItemIndex = 0;
-    this.loadingPageSize = this.lazyLoadPageSize;
+    this.searchWords();
+  }
+
+  onSort(field: string) {
+    if (field === this.sortField) {
+      this.sortOrder = -this.sortOrder;
+    } else {
+      this.sortField = field;
+      this.sortOrder = AppConstants.SORT_ORDER_UP;
+    }
 
     this.searchWords();
   }
 
-  onSortTable(event: SortEvent) {
-    this.sortField = event.field!;
-    this.sortOrder = event.order!;
-
-    this.firstVisibleItemIndex = 0;
-    this.loadingItemIndex = 0;
-    this.loadingPageSize = this.lazyLoadPageSize;
-    this.searchWords();
-  }
-
-  onLazyLoad(event: TableLazyLoadEvent) {
-    const firstItemIndex = event.first!;
-    if (
-      firstItemIndex < 0 ||
-      this.firstVisibleItemIndex === firstItemIndex ||
-      (event.sortField &&
-        (event.sortOrder !== this.sortOrder || event.sortField !== this.sortField))
-    ) {
+  onPlaceholderInView(index: number) {
+    if (this.isScrollingToTop) {
       return;
     }
 
-    this.firstVisibleItemIndex = firstItemIndex;
+    const page = Math.floor(index / this.pageSize);
 
-    if (
-      firstItemIndex === 0 ||
-      (firstItemIndex > this.loadingItemIndex &&
-        firstItemIndex <= this.loadingItemIndex + this.loadingPageSize)
-    ) {
-      this.loadingItemIndex = firstItemIndex;
-      this.loadingPageSize = this.lazyLoadPageSize;
-    } else {
-      this.loadingItemIndex = firstItemIndex - this.lazyLoadPageSize;
-      this.loadingPageSize = this.lazyLoadPageSize * 2;
+    if (!this.loadedPages.has(page)) {
+      this.loadPage(page);
     }
-
-    this.searchWords();
-  }
-
-  onImagePreviewShow() {
-    document.getElementById('image-backdrop')?.classList.add('active');
-  }
-
-  onImagePreviewHide() {
-    document.getElementById('image-backdrop')?.classList.remove('active');
   }
 
   onOpenWordTranslationsDialog(word = '') {
     this.dialogService.open(WordTranslationsDialogComponent, {
       header: 'Word',
-      modal: true,
-      dismissableMask: true,
-      baseZIndex: 10000,
-      showHeader: true,
-      closable: true,
-      closeOnEscape: true,
       styleClass: 'word-translations-dialog',
+      waitUntilReady: true,
       data: {
         word: word,
         onWordSaved: this.onWordSaved.bind(this),
@@ -247,18 +226,108 @@ export class HomeComponent {
     this.authService.logout();
   }
 
+  isExerciseUnavailable(flag: ExerciseAvailabilityFlag) {
+    return this.userStatistics?.[flag] === false;
+  }
+
+  isExerciseStarted(route: string) {
+    return this.dynamicConfigService.isExerciseStarted(route);
+  }
+
   onStartTranslationsWordExercise() {
-    this.router.navigate(['/translations-word-exercise']);
+    if (!this.isExerciseUnavailable('isAvailableTranslationsWordExercise')) {
+      this.startExercise('/translations-word-exercise');
+    }
   }
 
   onStartRepeatPausedWordsExercise() {
-    if (this.userStatistics?.isAvailableRepeatPausedWordsExercise) {
-      this.router.navigate(['/repeat-paused-words-exercise']);
+    if (!this.isExerciseUnavailable('isAvailableRepeatPausedWordsExercise')) {
+      this.startExercise('/repeat-paused-words-exercise');
+    }
+  }
+
+  onStartTomorrowWords() {
+    if (!this.isExerciseUnavailable('isAvailableTomorrowWords')) {
+      this.startExercise('/tomorrow-words');
     }
   }
 
   onStartCrosswordExercise() {
-    this.router.navigate(['/crossword-exercise']);
+    if (!this.isExerciseUnavailable('isAvailableCrosswordExercise')) {
+      this.startExercise('/crossword-exercise');
+    }
+  }
+
+  onStartSpeechExercise() {
+    if (this.staticConfigService.enableSpeechExercise) {
+      this.startExercise('/speech-exercise');
+    }
+  }
+
+  onOpenMistakes() {
+    if (this.staticConfigService.enableSpeechExercise) {
+      this.startExercise('/mistakes');
+    }
+  }
+
+  onStartSentenceTranslationExercise() {
+    if (this.staticConfigService.enableSpeechExercise) {
+      this.startExercise('/sentence-translation-exercise');
+    }
+  }
+
+  onStartListeningExercise() {
+    if (
+      this.staticConfigService.enableSpeechExercise &&
+      !this.isExerciseUnavailable('isAvailableListeningExercise')
+    ) {
+      this.startExercise('/listening-exercise');
+    }
+  }
+
+  onStartCountabilityExercise() {
+    if (
+      this.staticConfigService.enableSpeechExercise &&
+      !this.isExerciseUnavailable('isAvailableCountabilityExercise')
+    ) {
+      this.startExercise('/countability-exercise');
+    }
+  }
+
+  onStartArticlesExercise() {
+    if (
+      this.staticConfigService.enableSpeechExercise &&
+      !this.isExerciseUnavailable('isAvailableArticlesExercise')
+    ) {
+      this.startExercise('/articles-exercise');
+    }
+  }
+
+  onStartVerbFormsExercise() {
+    if (
+      this.staticConfigService.enableSpeechExercise &&
+      !this.isExerciseUnavailable('isAvailableVerbFormsExercise')
+    ) {
+      this.startExercise('/verb-forms-exercise');
+    }
+  }
+
+  onStartGuessExercise() {
+    if (
+      this.staticConfigService.enableSpeechExercise &&
+      !this.isExerciseUnavailable('isAvailableGuessExercise')
+    ) {
+      this.startExercise('/guess-exercise');
+    }
+  }
+
+  onStartExplainExercise() {
+    if (
+      this.staticConfigService.enableSpeechExercise &&
+      !this.isExerciseUnavailable('isAvailableExplainExercise')
+    ) {
+      this.startExercise('/explain-exercise');
+    }
   }
 
   toggleLanguage() {
@@ -267,6 +336,35 @@ export class HomeComponent {
       this.language === this.englishLanguage ? this.polishLanguage : this.englishLanguage;
     this.searchText = '';
     this.userStatisticsService.refresh();
+    this.loadLanguageLevel();
+  }
+
+  languageLevelGroup(level: LanguageLevelEnum) {
+    return level <= LanguageLevelEnum.A2 ? 'a' : level <= LanguageLevelEnum.B2 ? 'b' : 'c';
+  }
+
+  onSelectLanguageLevel(level: LanguageLevelEnum, panel: PopoverComponent) {
+    if (this.pickedLanguageLevel !== null) {
+      return;
+    }
+
+    this.pickedLanguageLevel = level;
+    setTimeout(() => {
+      panel.hide();
+      this.pickedLanguageLevel = null;
+    }, 300);
+
+    if (level === this.languageLevel) {
+      return;
+    }
+
+    this.apiService
+      .putLanguageSetting(level)
+      .pipe(take(1))
+      .subscribe({
+        next: (setting) => (this.languageLevel = setting.level),
+        error: (error) => console.error(error.message),
+      });
   }
 
   onSearchChange($event: any) {
@@ -277,53 +375,107 @@ export class HomeComponent {
     this.dynamicConfigService.toggleSound();
   }
 
+  private startExercise(route: string) {
+    this.dynamicConfigService.markExerciseStarted(route);
+    this.router.navigate([route]);
+  }
+
+  private loadLanguageLevel() {
+    const language = this.language;
+    this.languageLevel = null;
+
+    this.apiService
+      .getLanguageSetting()
+      .pipe(take(1))
+      .subscribe({
+        next: (setting) => {
+          if (language === this.language) {
+            this.languageLevel = setting.level;
+          }
+        },
+        error: (error) => console.error(error.message),
+      });
+  }
+
   private clearSearch() {
+    this.searchGeneration++;
     this.wordTranslations = null;
+    this.items = [];
+    this.loadedPages.clear();
     this.isSearchActive = false;
+    this.isBusy = false;
   }
 
   private searchWords() {
+    const generation = ++this.searchGeneration;
     this.isBusy = true;
-    this.apiService
-      .searchWordTranslations(
-        this.searchText,
-        this.sortField,
-        this.sortOrder === 1 ? 'asc' : 'desc',
-        this.loadingItemIndex,
-        this.loadingPageSize,
-        this.searchFilterLearningProgresses,
-      )
+
+    this.fetchPage(0)
       .pipe(
-        take(1),
-        finalize(() => (this.isBusy = false)),
+        finalize(() => {
+          if (generation === this.searchGeneration) {
+            this.isBusy = false;
+          }
+        }),
       )
       .subscribe({
         next: (data) => {
+          if (generation !== this.searchGeneration) {
+            return;
+          }
+
           this.wordTranslations = data;
-
-          if (this.wordTranslations.itemsCount !== this.itemsTotalCount) {
-            this.itemsTotalCount = this.wordTranslations.itemsCount;
-            this.items = Array.from({
-              length: this.itemsTotalCount,
-            });
-          }
-
-          const count = Math.min(
-            this.wordTranslations.items.length,
-            this.items.length - this.loadingItemIndex,
-          );
-
-          const items = this.wordTranslations.items.slice(0, count);
-          if (count > 0) {
-            this.items.splice(this.loadingItemIndex, count, ...items);
-          }
-
+          this.itemsTotalCount = data.itemsCount;
+          this.loadedPages = new Set([0]);
+          this.items = Array.from({ length: data.itemsCount }, (_, index) => data.items[index]);
+          this.itemsVersion++;
           this.isSearchActive = true;
         },
         error: (error) => {
           console.error(error.message);
         },
       });
+  }
+
+  private loadPage(page: number) {
+    const generation = this.searchGeneration;
+    this.loadedPages.add(page);
+
+    this.fetchPage(page).subscribe({
+      next: (data) => {
+        if (generation !== this.searchGeneration) {
+          return;
+        }
+
+        const items = [...this.items];
+        const offset = page * this.pageSize;
+
+        data.items.forEach((item, index) => {
+          if (offset + index < items.length) {
+            items[offset + index] = item;
+          }
+        });
+
+        this.items = items;
+      },
+      error: (error) => {
+        this.loadedPages.delete(page);
+        console.error(error.message);
+      },
+    });
+  }
+
+  private fetchPage(page: number) {
+    return this.apiService
+      .searchWordTranslations(
+        this.searchText,
+        this.sortField,
+        this.sortOrder === AppConstants.SORT_ORDER_UP ? 'asc' : 'desc',
+        page * this.pageSize,
+        this.pageSize,
+        this.searchFilterLearningProgresses,
+      )
+      .pipe(take(1));
   }
 
   private initEventDescriptions() {

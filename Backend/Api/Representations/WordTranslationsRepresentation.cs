@@ -44,3 +44,9 @@ public class Usage
 }
 
 public sealed record WordPronunciationRepresentation(byte[] Data, string ContentType);
+
+public class WordSuggestionsRepresentation
+{
+    public List<string> Items { get; set; } = [];
+    public string Error { get; set; }
+}

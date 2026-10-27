@@ -1,0 +1,173 @@
+@if (isUnavailable) {
+  <app-exercise-unavailable
+    message="Verb forms are available for English only."
+  ></app-exercise-unavailable>
+} @else {
+  <div class="verb-forms-exercise">
+    @if (error) {
+      <div class="error">{{ error }}</div>
+    }
+
+    @if (exercise && isFinished) {
+      <div class="summary">
+        <span class="summary-correct">{{ correctCount }}</span> of {{ tasks.length }} correct
+        <span class="summary-points" [class.zero]="!totalPoints">+{{ totalPoints }}</span>
+      </div>
+      @if (dailyLimit) {
+        <div class="today" [class.reached]="isLimitReached">
+          @if (isLimitReached) {
+            Daily limit reached · {{ dailyPoints }} / {{ dailyLimit }} points
+          } @else {
+            Today: {{ dailyPoints }} / {{ dailyLimit }} points
+          }
+        </div>
+      }
+      <div class="review selectable">
+        @for (result of results; track $index; let index = $index) {
+          @if (result) {
+            <div class="review-item" [class.wrong]="!result.isCorrect">
+              {{ reviewSentence(index) }}
+              @if (result.forms.length) {
+                <div class="review-forms">{{ result.forms.join(' – ') }}</div>
+              }
+              @if (!result.isCorrect) {
+                <div class="review-explanation">{{ result.explanation }}</div>
+              }
+            </div>
+          }
+        }
+      </div>
+      <div class="buttons">
+        <button
+          #repeatButton
+          type="button"
+          class="ui-button ui-button-success"
+          [disabled]="!isRepeatAvailable"
+          (click)="onRepeat()"
+        >
+          Repeat
+        </button>
+        <button type="button" class="ui-button back" (click)="onHome()">Home</button>
+      </div>
+    } @else if (exercise && task) {
+      @if (staticConfigService.enableTimer && !result && !isBusy) {
+        <round-progress
+          class="exercise-timer"
+          [class.warn]="remainingTime <= staticConfigService.warningTimeInSeconds"
+          [current]="(100 * remainingTime) / staticConfigService.timerValueInSeconds"
+          [max]="100"
+          [radius]="50"
+          [stroke]="10"
+          [rounded]="true"
+          [duration]="1500"
+        />
+        @if (staticConfigService.showTimerSeconds && remainingTime > 0) {
+          <div class="timer-seconds">{{ remainingTime }}</div>
+        }
+      }
+
+      <div class="progressbar-container">
+        <app-progress-bar [value]="progressPercent"
+          ><span>{{ answeredCount }}/{{ tasks.length }}</span></app-progress-bar
+        >
+      </div>
+
+      <div class="counter">{{ taskIndex + 1 }} / {{ tasks.length }}</div>
+
+      @if (dailyLimit) {
+        <div class="today" [class.reached]="isLimitReached">
+          @if (isLimitReached) {
+            Daily limit reached · {{ dailyPoints }} / {{ dailyLimit }} points
+          } @else {
+            Today: {{ dailyPoints }} / {{ dailyLimit }} points
+          }
+        </div>
+      }
+
+      <div class="sentence" [class.selectable]="!!result">
+        {{ sentenceParts.before }}
+        @if (result) {
+          @if (!result.isCorrect && answers[taskIndex]) {
+            <span class="gap wrong">{{ answers[taskIndex] }}</span>
+          }
+          <span class="gap correct">{{ result.correctAnswer }}</span>
+        } @else {
+          <input
+            #answerInput
+            type="text"
+            class="gap-input"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            [disabled]="isBusy"
+            [(ngModel)]="answer"
+            (keydown.enter)="onCheck()"
+          />
+        }
+        {{ sentenceParts.after }}
+      </div>
+
+      @if (result) {
+        <div class="feedback">
+          <span class="points" [class.zero]="!result.points">+{{ result.points }}</span>
+          @if (result.forms.length) {
+            <span class="forms selectable">{{ result.forms.join(' – ') }}</span>
+          }
+        </div>
+        @if (result.explanation) {
+          <div class="explanation selectable">{{ result.explanation }}</div>
+        }
+        <div class="buttons">
+          <button #nextButton type="button" class="ui-button ui-button-success" (click)="onNext()">
+            {{ taskIndex < tasks.length - 1 ? 'Next' : 'Finish' }}
+          </button>
+        </div>
+      } @else {
+        <div class="buttons">
+          <button
+            type="button"
+            class="ui-button ui-button-success"
+            [disabled]="!answer.trim() || isBusy"
+            (click)="onCheck()"
+          >
+            Check
+          </button>
+          <button
+            type="button"
+            class="ui-button dont-know"
+            [disabled]="isBusy"
+            (click)="onDontKnow()"
+          >
+            Don't know
+          </button>
+        </div>
+      }
+    } @else if (error && !isBusy) {
+      <div class="buttons">
+        <button type="button" class="ui-button ui-button-success" (click)="onRepeat()">
+          Try again
+        </button>
+        <button type="button" class="ui-button back" (click)="onHome()">Home</button>
+      </div>
+    }
+  </div>
+}
+
+@if (selectedText) {
+  <svg-icon
+    src="../../../assets/images/svg/arrow-up-right.svg"
+    class="selected-text-icon pointer svg-icon-size-medium"
+    [style.top.px]="selectionTop"
+    [style.left.px]="selectionLeft"
+    appTooltip="Open in words"
+    tooltipPosition="top"
+    (mousedown)="$event.preventDefault()"
+    (click)="onOpenWordTranslationsDialog()"
+  ></svg-icon>
+}
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

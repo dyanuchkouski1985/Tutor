@@ -26,6 +26,18 @@ public class WordTranslationsController(
         return Ok(await translationService.SuggestionsAsync(language));
     }
 
+    [HttpPost("[action]")]
+    public async Task<IActionResult> SuggestTranslations(SuggestWordItemsRequest request)
+    {
+        return Ok(await translationService.SuggestTranslationsAsync(request));
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> SuggestUsages(SuggestWordItemsRequest request)
+    {
+        return Ok(await translationService.SuggestUsagesAsync(request));
+    }
+
     [HttpGet]
     public async Task<IActionResult> Get(string value, Language language)
     {

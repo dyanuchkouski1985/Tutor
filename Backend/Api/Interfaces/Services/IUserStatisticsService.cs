@@ -6,4 +6,5 @@ namespace Api.Interfaces.Services;
 public interface IUserStatisticsService
 {
     Task<UserStatisticsRepresentation> GetAsync(GetUserStatisticsRequest request);
+    Task<UserStatisticsCalendarRepresentation> GetCalendarAsync(GetUserStatisticsCalendarRequest request);
 }

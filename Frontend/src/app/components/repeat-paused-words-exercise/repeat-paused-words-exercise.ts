@@ -1,37 +1,40 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {ApiService} from '../../services/api.service';
-import {ExerciseWordStatistic} from '../../models/exercise-word-statistic';
-import {WordTranslationsExerciseModel} from '../../models/word-translations-exercise-model';
-import {finalize, take} from 'rxjs/operators';
-import {ExerciseWordResult} from '../../models/exercise-word-result';
-import {UserStatisticsService} from '../../services/user-statistics.service';
-import {StaticConfigService} from '../../services/static.config.service';
+import { Component, ElementRef, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { ApiService } from '../../services/api.service';
+import { ExerciseCompletionsService } from '../../services/exercise-completions.service';
+import { ExerciseTypeEnum } from '../../enums/exercise-type.enum';
+import { ExerciseWordStatistic } from '../../models/exercise-word-statistic';
+import { WordTranslationsExerciseModel } from '../../models/word-translations-exercise-model';
+import { finalize, take } from 'rxjs/operators';
+import { ExerciseWordResult } from '../../models/exercise-word-result';
+import { UserStatisticsService } from '../../services/user-statistics.service';
+import { StaticConfigService } from '../../services/static.config.service';
 
-import {FormsModule} from '@angular/forms';
-import {ExerciseResultComponent} from '../exercise-result/exercise-result';
-import {ProgressBarModule} from 'primeng/progressbar';
-import {SvgIconComponent} from 'angular-svg-icon';
-import {ImageModule} from 'primeng/image';
-import {StarComponent} from '../star/star';
-import {ButtonModule} from 'primeng/button';
-import {AutoFocusModule} from 'primeng/autofocus';
-import {RippleModule} from 'primeng/ripple';
-import {WordLearningProgressEnum} from '../../enums/word-learning-progress.enum';
+import { FormsModule } from '@angular/forms';
+import { ExerciseResultComponent } from '../exercise-result/exercise-result';
+import { ExerciseUnavailableComponent } from '../exercise-unavailable/exercise-unavailable';
+import { ProgressBarComponent } from '../../ui/progress-bar';
+import { SvgIconComponent } from 'angular-svg-icon';
+import { ImageComponent } from '../../ui/image';
+import { StarComponent } from '../star/star';
+import { HighlightWordPipe } from '../../pipes/highlightWord';
+import { WordLearningProgressEnum } from '../../enums/word-learning-progress.enum';
+import { AutoFocusDirective } from '../../ui/auto-focus';
 
 @Component({
   selector: 'app-repeat-paused-words-exercise',
   imports: [
+    AutoFocusDirective,
     FormsModule,
-    ProgressBarModule,
-    ImageModule,
-    ButtonModule,
-    AutoFocusModule,
-    RippleModule,
+    ProgressBarComponent,
+    ImageComponent,
     SvgIconComponent,
     ExerciseResultComponent,
-    StarComponent
+    ExerciseUnavailableComponent,
+    StarComponent,
+    HighlightWordPipe,
   ],
   templateUrl: './repeat-paused-words-exercise.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./repeat-paused-words-exercise.scss'],
 })
 export class RepeatPausedWordsExerciseComponent implements OnInit {
@@ -43,13 +46,14 @@ export class RepeatPausedWordsExerciseComponent implements OnInit {
   answersHistory: boolean[] = [];
   questionIndex = 0;
   isBusy = false;
+  isUnavailable = false;
 
   constructor(
     public readonly staticConfigService: StaticConfigService,
     private readonly apiService: ApiService,
+    private readonly exerciseCompletionsService: ExerciseCompletionsService,
     private readonly userStatisticsService: UserStatisticsService,
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.startExercise();
@@ -77,6 +81,8 @@ export class RepeatPausedWordsExerciseComponent implements OnInit {
           task.reverted,
         ),
       );
+      this.saveResult(task.wordId, true);
+      this.markCompletedIfLast();
 
       const prevTask = this.tasks[this.questionIndex];
       if (prevTask?.reverted) {
@@ -90,7 +96,6 @@ export class RepeatPausedWordsExerciseComponent implements OnInit {
     }
 
     this.showAnswer = !this.showAnswer;
-    this.saveResults();
   }
 
   onDoNotKnow() {
@@ -118,8 +123,15 @@ export class RepeatPausedWordsExerciseComponent implements OnInit {
         task.reverted,
       ),
     );
-    this.saveResults();
+    this.saveResult(task.wordId, false);
+    this.markCompletedIfLast();
     this.submitButtonRef?.nativeElement.focus();
+  }
+
+  private markCompletedIfLast() {
+    if (this.questionIndex === this.tasks.length) {
+      this.exerciseCompletionsService.markCompleted(ExerciseTypeEnum.RepeatPausedWords);
+    }
   }
 
   onRepeat() {
@@ -139,6 +151,7 @@ export class RepeatPausedWordsExerciseComponent implements OnInit {
     this.questionIndex = 0;
     this.answersHistory = [];
     this.tasks = [];
+    this.isUnavailable = false;
     this.isBusy = true;
     this.apiService
       .getRepeatPausedWordsExercise()
@@ -149,6 +162,10 @@ export class RepeatPausedWordsExerciseComponent implements OnInit {
       .subscribe({
         next: (data) => {
           this.tasks = data;
+          this.isUnavailable = !data.length;
+          if (this.isUnavailable) {
+            return;
+          }
           for (const task of this.tasks) {
             if (Math.random() > 0.5) {
               const word = task.word;
@@ -170,23 +187,17 @@ export class RepeatPausedWordsExerciseComponent implements OnInit {
       });
   }
 
-  private saveResults() {
-    if (this.questionIndex === this.tasks.length && !this.showAnswer) {
-      const result: ExerciseWordResult[] = [];
-      for (let i = 0; i < this.tasks.length; i++) {
-        result.push(new ExerciseWordResult(this.tasks[i].wordId, this.answersHistory[i]));
-      }
-      this.apiService
-        .putRepeatPausedWordsExerciseResults(result)
-        .pipe(take(1))
-        .subscribe({
-          next: () => {
-            this.userStatisticsService.refresh();
-          },
-          error: (error) => {
-            console.log(error);
-          },
-        });
-    }
+  private saveResult(wordId: number, isCorrect: boolean) {
+    this.apiService
+      .putRepeatPausedWordsExerciseResults([new ExerciseWordResult(wordId, isCorrect)])
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.userStatisticsService.refresh();
+        },
+        error: (error) => {
+          console.log(error);
+        },
+      });
   }
 }

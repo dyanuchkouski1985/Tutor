@@ -1,0 +1,199 @@
+.selected-text-icon {
+  position: fixed;
+  z-index: 1100;
+  transform: translate(-50%, -115%);
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--ui-surface-800);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 45%);
+}
+
+.conversation-runner-container {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  padding: 0 20px 20px;
+
+  .header-container {
+    .back-icon {
+      float: right;
+    }
+
+    .title {
+      font-size: var(--font-size-xxx-large);
+      color: var(--color-primary);
+      text-align: center;
+    }
+
+    .context {
+      font-size: var(--font-size-small);
+      color: var(--color-font-icons);
+      text-align: center;
+      margin-top: 5px;
+    }
+  }
+
+  .transcript-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+    overflow-y: auto;
+    margin: 10px 0 20px;
+    padding: 0 10px;
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      align-self: flex-start;
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border-left: 4px solid var(--color-font-icons);
+      background: var(--color-primary-heavy-dark);
+      text-align: left;
+
+      @for $index from 0 to 20 {
+        &.participant-message-#{$index} {
+          border-left-color: var(--color-message-#{$index}-accent);
+          background: var(--color-message-#{$index});
+        }
+      }
+
+      &.user-message {
+        align-self: flex-end;
+        border-left: none;
+        border-right: 4px solid var(--color-primary-highlight);
+        background: var(--color-primary-heavy-dark);
+      }
+
+      .message-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .speaker-name {
+          color: var(--color-font-icons);
+        }
+
+        .verdict-icon.verdict-ok path {
+          fill: var(--color-green) !important;
+        }
+
+        .verdict-icon.verdict-errors path {
+          fill: var(--color-error) !important;
+        }
+
+        .message-points {
+          color: var(--color-secondary-highlight);
+
+          &.spent {
+            opacity: 0.5;
+          }
+        }
+      }
+
+      .message-text {
+        margin-top: 5px;
+      }
+
+      .validation-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        color: var(--color-secondary-highlight);
+      }
+
+      .validation-errors {
+        margin: 8px 0 0;
+        padding-left: 20px;
+
+        li {
+          margin-bottom: 5px;
+        }
+
+        .fragment {
+          color: var(--color-error);
+        }
+
+        .arrow {
+          margin: 0 8px;
+        }
+
+        .correction {
+          color: var(--color-green);
+        }
+
+        .explanation {
+          display: block;
+          color: var(--color-font-icons);
+        }
+      }
+    }
+
+    .empty-message {
+      color: var(--color-font-icons);
+      text-align: center;
+    }
+  }
+
+  .error-container {
+    color: var(--color-error);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    .interim-text {
+      color: var(--color-font-icons);
+    }
+
+    .answer-text-container {
+      width: auto;
+
+      textarea {
+        font-size: var(--font-size-xx-large);
+        flex: none;
+        width: 400px;
+        max-height: 30vh;
+        resize: none;
+      }
+
+      button {
+        width: 60px;
+      }
+
+      .microphone-button.listening {
+        background: var(--color-error);
+      }
+
+      .cancel-listening-button {
+        background: var(--color-font-icons);
+
+        &.invisible {
+          visibility: hidden;
+        }
+      }
+
+      button[type='submit']:has(+ .cancel-listening-button.invisible) {
+        border-start-end-radius: var(--ui-radius-field);
+        border-end-end-radius: var(--ui-radius-field);
+      }
+    }
+
+    .unsupported-message {
+      color: var(--color-font-icons);
+    }
+  }
+}

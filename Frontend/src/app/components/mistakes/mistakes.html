@@ -1,0 +1,163 @@
+<div class="mistakes-container">
+  <div class="header-container">
+    <svg-icon
+      src="../../../assets/images/svg/home.svg"
+      class="home-icon svg-icon-size-large pointer"
+      (click)="onHome()"
+    ></svg-icon>
+
+    @if (groups.length) {
+      <div class="practise-button-container" [class.disabled]="!availableCount">
+        <svg-icon
+          src="../../../assets/images/svg/practise.svg"
+          class="svg-icon-size-large pointer"
+          (click)="onPractise()"
+        ></svg-icon>
+        <div class="practise-count">{{ availableCount }}</div>
+      </div>
+    }
+
+    <div class="title">Mistakes</div>
+  </div>
+
+  <div class="content-container">
+    @if (loadError) {
+      <div class="empty-message load-error">{{ loadError }}</div>
+    } @else if (isLoaded && !groups.length && !ignored.length) {
+      <div class="empty-message">
+        No mistakes yet. They appear here as you talk in conversations.
+      </div>
+    }
+
+    @if (groups.length) {
+      <div class="view-switch">
+        <app-select-button
+          [options]="viewOptions"
+          [(ngModel)]="view"
+          size="small"
+          optionLabel="label"
+          optionValue="value"
+        />
+      </div>
+    }
+
+    @for (group of groups; track group.title) {
+      <div class="section">
+        <div class="section-title">{{ group.title }} ({{ group.patterns.length }})</div>
+
+        @for (pattern of group.patterns; track pattern.id) {
+          <ng-container
+            *ngTemplateOutlet="patternTemplate; context: { $implicit: pattern }"
+          ></ng-container>
+        }
+      </div>
+    }
+
+    @if (ignored.length) {
+      <div class="section ignored">
+        <div class="section-title pointer" (click)="onToggleIgnored()">
+          Hidden ({{ ignored.length }}) {{ isIgnoredExpanded ? '▾' : '▸' }}
+        </div>
+
+        @if (isIgnoredExpanded) {
+          @for (pattern of ignored; track pattern.id) {
+            <ng-container
+              *ngTemplateOutlet="patternTemplate; context: { $implicit: pattern }"
+            ></ng-container>
+          }
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<ng-template #patternTemplate let-pattern>
+  <div class="pattern">
+    <div class="pattern-header">
+      <span class="category-chip">{{ pattern.category }}</span>
+      <span class="rule">{{ pattern.rule }}</span>
+      <span class="count" appTooltip="Times made" tooltipPosition="bottom">
+        ×{{ pattern.occurrencesCount }}
+      </span>
+      @if (pattern.lastOccurrenceDate) {
+        <span class="last-seen" appTooltip="Last made" tooltipPosition="bottom">
+          {{ lastSeen(pattern.lastOccurrenceDate) }}
+        </span>
+      }
+      @if (pattern.progress === mistakeProgressEnum.Mastered && pattern.lastPracticeDate) {
+        <span class="review">{{ reviewLabel(pattern.lastPracticeDate) }}</span>
+      }
+      <span class="progress" [ngClass]="progressClass(pattern.progress)">
+        {{ progressLabel(pattern.progress) }}
+      </span>
+      @if (pattern.progress === mistakeProgressEnum.Ignored) {
+        <span class="action pointer" (click)="onSetIgnored(pattern, false)">restore</span>
+      } @else {
+        <span
+          class="action pointer"
+          appTooltip="Not a real mistake? Hide it from practice"
+          tooltipPosition="bottom"
+          (click)="onSetIgnored(pattern, true)"
+          >hide</span
+        >
+      }
+      <span
+        class="action delete-action pointer"
+        appTooltip="Remove for good, with all its examples"
+        tooltipPosition="bottom"
+        (click)="panelConfirmDelete.show($event)"
+        >delete</span
+      >
+      <app-popover #panelConfirmDelete>
+        <div class="confirm-delete-container">
+          <svg-icon
+            class="svg-icon-size-medium pointer cross-icon mr-10"
+            src="../../../assets/images/svg/cross.svg"
+            (click)="panelConfirmDelete.hide()"
+          ></svg-icon>
+          <svg-icon
+            class="svg-icon-size-medium pointer"
+            src="../../../assets/images/svg/check.svg"
+            (click)="onDelete(pattern, panelConfirmDelete)"
+          ></svg-icon>
+        </div>
+      </app-popover>
+    </div>
+
+    @if (isExamplesVisible(pattern)) {
+      <ul class="examples">
+        @for (example of pattern.examples; track $index) {
+          <li>
+            <span class="fragment">{{ example.fragment }}</span>
+            <span class="arrow">&rarr;</span>
+            <span class="correction">{{ example.correction }}</span>
+            <span class="date">{{ example.createdDate | date: 'd MMM' }}</span>
+            @if (example.explanation) {
+              <span class="explanation">{{ example.explanation }}</span>
+            }
+          </li>
+        }
+      </ul>
+      @if (revealedIds.has(pattern.id)) {
+        <div class="show-examples pointer" (click)="onHideExamples(pattern)">
+          hide examples ({{ pattern.examples.length }})
+        </div>
+      }
+    } @else {
+      <div
+        class="show-examples pointer"
+        appTooltip="Practise first - seeing them gives the answers away"
+        tooltipPosition="bottom"
+        (click)="onShowExamples(pattern)"
+      >
+        show examples ({{ pattern.examples.length }})
+      </div>
+    }
+  </div>
+</ng-template>
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

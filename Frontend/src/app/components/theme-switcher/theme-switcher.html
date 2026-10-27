@@ -1,67 +1,65 @@
-<div class="mlr-10">
+<div>
   <svg-icon
     src="../../../assets/images/svg/palette.svg"
     class="pointer"
     (click)="panelPalette.toggle($event)"
   ></svg-icon>
 
-  <p-popover #panelPalette appendTo="body">
+  <app-popover #panelPalette panelClass="ui-popover-animated">
     <div>
+      <div class="mode-container mb-20">
+        <span class="font-size-medium mb-5">Mode</span>
+        <app-select-button
+          [options]="modeOptions"
+          [ngModel]="isDark()"
+          (ngModelChange)="setDark($event)"
+          size="small"
+          optionLabel="label"
+          optionValue="value"
+        />
+      </div>
       <div class="primary-colors-container mb-20">
         <span class="font-size-medium mb-5">Primary Colors</span>
         <div class="primary-color">
-          @for (primaryColor of primaryColors(); track trackPrimaryColor($index, primaryColor)) {
+          @for (primaryColor of primaryColors; track primaryColor; let index = $index) {
             <button
               type="button"
-              [pTooltip]="primaryColor.name"
+              [appTooltip]="primaryColor"
               tooltipPosition="bottom"
-              (click)="updateColors($event, 'primary', primaryColor)"
+              (click)="updateColors('primary', primaryColor)"
               class="pointer"
-            [ngStyle]="{
-              'background-color':
-                primaryColor.name === 'noir' ? 'var(--p-surface-0)' : primaryColor.palette['500'],
-              'outline-color':
-                selectedPrimaryColor() === primaryColor.name ? 'var(--p-primary-color)' : '',
-            }"
+              [style.--index]="index"
+              [ngStyle]="{
+                'background-color':
+                  primaryColor === 'noir'
+                    ? 'var(--ui-surface-0)'
+                    : 'var(--theme-' + primaryColor + '-500)',
+                'outline-color':
+                  selectedPrimaryColor() === primaryColor ? 'var(--ui-primary-color)' : '',
+              }"
             ></button>
           }
         </div>
       </div>
-      <div class="surface-colors-container mb-20">
+      <div class="surface-colors-container">
         <span class="font-size-medium mb-5">Surface Colors</span>
         <div class="surface-color">
-          @for (surface of surfaces; track trackSurface($index, surface)) {
+          @for (surface of surfaces; track surface.name; let index = $index) {
             <button
               type="button"
-              [pTooltip]="surface.name"
+              [appTooltip]="surface.name"
               tooltipPosition="bottom"
-              (click)="updateColors($event, 'surface', surface)"
-              class="outline outline-2 outline-offset-1 outline-transparent cursor-pointer p-0 rounded-[50%] w-5 h-5"
-            [ngStyle]="{
-              'background-color': surface.palette['500'],
-              'outline-color':
-                selectedSurfaceColor() === surface.name ? 'var(--p-primary-color)' : '',
-            }"
+              (click)="updateColors('surface', surface.name)"
+              [style.--index]="index"
+              [ngStyle]="{
+                'background-color': surface.palette['500'],
+                'outline-color':
+                  selectedSurfaceColor() === surface.name ? 'var(--ui-primary-color)' : '',
+              }"
             ></button>
           }
         </div>
       </div>
-      <div class="preset-container mb-20">
-        <span class="preset-label font-size-medium mb-5">Preset</span>
-        <div>
-          <p-selectbutton
-            [options]="presets"
-            [ngModel]="selectedPreset()"
-            (ngModelChange)="onPresetChange($event)"
-            [unselectable]="true"
-            size="small"
-            />
-        </div>
-      </div>
-      <div class="ripple-container">
-        <span class="font-size-medium mb-5">Ripple Effect</span>
-        <p-toggleswitch [(ngModel)]="ripple" />
-      </div>
     </div>
-  </p-popover>
+  </app-popover>
 </div>

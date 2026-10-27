@@ -14,11 +14,69 @@ using Api.Representations.ThirdParty;
 
 namespace Api.Services.BusinessLogic;
 
-public class WordTranslationsService(TutorContext dbContext, ISecurityContext securityContext)
+public class WordTranslationsService(
+    TutorContext dbContext,
+    ISecurityContext securityContext,
+    IWordAiService aiService,
+    ILanguageSettingsService languageSettingsService)
     : IWordTranslationsService
 {
     private TutorContext DbContext { get; } = dbContext;
     private Guid UserId { get; } = Guid.Parse(securityContext.GetCurrentUserId());
+    private IWordAiService AiService { get; } = aiService;
+    private ILanguageSettingsService LanguageSettingsService { get; } = languageSettingsService;
+
+    public async Task<WordSuggestionsRepresentation> SuggestTranslationsAsync(
+        SuggestWordItemsRequest request)
+    {
+        var value = request.Value?.Trim();
+
+        if (string.IsNullOrWhiteSpace(value))
+            return new WordSuggestionsRepresentation();
+
+        var suggestions = await AiService.SuggestTranslationsAsync(request.Language,
+            request.TranslationLanguage, value, BuildExisting(request.Existing));
+
+        return MapSuggestions(suggestions);
+    }
+
+    public async Task<WordSuggestionsRepresentation> SuggestUsagesAsync(
+        SuggestWordItemsRequest request)
+    {
+        var value = request.Value?.Trim();
+
+        if (string.IsNullOrWhiteSpace(value))
+            return new WordSuggestionsRepresentation();
+
+        var level = await LanguageSettingsService.GetLevelAsync(request.Language);
+
+        var suggestions = await AiService.SuggestUsagesAsync(request.Language, level, value,
+            BuildExisting(request.Existing));
+
+        return MapSuggestions(suggestions);
+    }
+
+    private static List<string> BuildExisting(List<string> existing) =>
+        (existing ?? [])
+        .Select(item => item?.Trim())
+        .Where(item => !string.IsNullOrWhiteSpace(item))
+        .Distinct()
+        .Take(GeneralConstants.WordSuggestionsExistingMaxCount)
+        .ToList();
+
+    private static WordSuggestionsRepresentation MapSuggestions(
+        Ai.AiResult<Ai.AiWordSuggestions> suggestions) =>
+        suggestions.IsSuccess
+            ? new WordSuggestionsRepresentation
+            {
+                Items = suggestions.Value.Items
+                    .Select(item => item?.Trim())
+                    .Where(item => !string.IsNullOrWhiteSpace(item))
+                    .Distinct()
+                    .Take(GeneralConstants.WordSuggestionsMaxCount)
+                    .ToList()
+            }
+            : new WordSuggestionsRepresentation { Error = suggestions.ErrorMessage };
 
     public async Task<Representations.Common.Page<WordTranslationsRepresentation>> SearchAsync(
         SearchWordTranslationsRequest request)

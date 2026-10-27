@@ -1,0 +1,78 @@
+:host {
+  display: block;
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--word-card-estimated-height);
+}
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 18px;
+  color: var(--color-primary);
+  font-size: var(--font-size-x-large);
+  text-align: left;
+  border: 1px solid var(--ui-border-color);
+  border-left: 5px solid var(--ui-border-color);
+  border-radius: 8px;
+
+  &.correct {
+    border-left-color: var(--color-green);
+  }
+
+  &.wrong {
+    border-left-color: var(--color-error);
+
+    .word {
+      color: var(--color-error);
+    }
+  }
+
+  .card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .word-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .word {
+      font-size: var(--font-size-xx-large);
+      color: var(--color-primary-highlight);
+    }
+  }
+
+  .translations {
+    color: var(--color-green);
+    margin-top: 2px;
+  }
+
+  .usages {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style-type: none;
+    font-size: var(--font-size-medium);
+    color: var(--color-font-icons);
+
+    li + li {
+      margin-top: 2px;
+    }
+  }
+
+  .pictures {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    max-width: 220px;
+
+    ::ng-deep app-image img {
+      height: 70px;
+      width: auto;
+      border-radius: 6px;
+    }
+  }
+}

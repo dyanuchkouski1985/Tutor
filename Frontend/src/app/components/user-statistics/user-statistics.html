@@ -10,10 +10,73 @@
           [stroke]="10"
           [rounded]="true"
           [duration]="1500"
-          />
-          <span>{{ userStatistics.dailyPercentage }}%</span>
+        />
+        <span>{{ userStatistics.dailyPercentage }}%</span>
+        @if (pendingCelebration) {
+          <div class="plasma-ball-container">
+            <button
+              #celebrationButton
+              type="button"
+              class="plasma-ball"
+              [appTooltip]="pendingCelebrationTitle"
+              tooltipPosition="bottom"
+              (click)="onOpenCelebration()"
+            >
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                @for (bolt of plasmaBolts; track $index) {
+                  <g [attr.transform]="'rotate(' + bolt.angle + ' 24 24)'">
+                    <path
+                      class="bolt"
+                      pathLength="1"
+                      [attr.d]="bolt.path"
+                      [style.--delay.s]="bolt.delay"
+                      [style.--duration.s]="bolt.duration"
+                      (animationiteration)="onPlasmaBoltFired(bolt)"
+                    />
+                  </g>
+                }
+                @for (angle of plasmaBurstAngles; track angle) {
+                  <path
+                    class="burst-ray"
+                    pathLength="1"
+                    d="M24 24 L26 18 L23 12 L26 6 L24 1"
+                    [attr.transform]="'rotate(' + angle + ' 24 24)'"
+                  />
+                }
+                <circle class="core" cx="24" cy="24" r="3.5" />
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+      <div class="word-column">
+        <div class="daily-limits">
+          @if (isConversation) {
+            <div
+              class="limit-points"
+              [class.completed]="
+                userStatistics.conversationPercentage >= userStatistics.conversationMaxDailyPoints
+              "
+              appTooltip="Points from Conversations today"
+              tooltipPosition="bottom"
+            >
+              <svg-icon
+                class="svg-icon-size-small"
+                src="../../../assets/images/svg/speech.svg"
+              ></svg-icon>
+              <span
+                >{{ userStatistics.conversationPercentage }}/{{
+                  userStatistics.conversationMaxDailyPoints
+                }}</span
+              >
+            </div>
+          }
         </div>
-        <div class="word-statistics">
+        <div
+          class="word-statistics"
+          [appTooltip]="userStatistics.totalNumberOfWords + ' words'"
+          tooltipPosition="bottom"
+        >
           <div class="fully-learned">
             <app-star [wordLearningProgress]="wordLearningProgressEnum.Completed"></app-star>
             <span>{{ userStatistics.totalNumberOfCompletedWords }}</span>
@@ -38,41 +101,86 @@
             <app-star [wordLearningProgress]="wordLearningProgressEnum.None"></app-star>
             <span>{{ userStatistics.totalNumberOfWordsWithProgress0 }}</span>
           </div>
-          <div class="total-number">
-            {{ userStatistics.totalNumberOfWords }}
-          </div>
-        </div>
-        <div class="email">
-          {{ userStatistics.email }}
-          <ul>
-            @for (
-              percentage of userStatistics.lastDaysPercentages; track
-              percentage; let i = $index; let isLast = $last) {
-              <li
-                [class.last]="isLast"
-                >
-                <svg-icon
-                  class="svg-icon-size-medium"
-                  [src]="'../../../assets/images/svg/' + (percentage >= 100 ? 'check.svg' : 'cross.svg')"
-            [pTooltip]="
-              (isLast
-                ? 'today'
-                : userStatistics.lastDaysPercentages.length -
-                  i -
-                  1 +
-                  (userStatistics.lastDaysPercentages.length - i - 1 === 1
-                    ? ' day ago'
-                    : ' days ago')) +
-              ': ' +
-              percentage
-            "
-                  [class.completed]="percentage >= 100"
-                  tooltipPosition="bottom"
-                ></svg-icon>
-              </li>
-            }
-          </ul>
         </div>
       </div>
-    }
-  </div>
+      <div class="email">
+        {{ userStatistics.email }}
+        <ul class="clickable" (click)="openActivityCalendar()">
+          @for (
+            percentage of userStatistics.lastDaysPercentages;
+            track percentage;
+            let i = $index;
+            let isLast = $last
+          ) {
+            <li [class.last]="isLast">
+              <svg-icon
+                class="svg-icon-size-medium"
+                [src]="
+                  '../../../assets/images/svg/' + (percentage >= 100 ? 'check.svg' : 'cross.svg')
+                "
+                [appTooltip]="
+                  (isLast
+                    ? 'today'
+                    : userStatistics.lastDaysPercentages.length -
+                      i -
+                      1 +
+                      (userStatistics.lastDaysPercentages.length - i - 1 === 1
+                        ? ' day ago'
+                        : ' days ago')) +
+                  ': ' +
+                  percentage
+                "
+                [class.completed]="percentage >= 100"
+                tooltipPosition="bottom"
+              ></svg-icon>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+</div>
+
+<app-toast key="goal-reached" position="top-center" messageClass="ui-toast-message-opaque">
+  <ng-template #message let-message>
+    <div class="goal-reached-toast" (pointerdown)="onToastPointerDown($event)">
+      <div class="title">{{ message.summary }}</div>
+      @if (message.data.records.length || message.data.achievements.length > 1) {
+        <div class="records">
+          @for (achievement of message.data.achievements; track achievement) {
+            <div class="goal">{{ achievement }}</div>
+          }
+          @for (record of message.data.records; track record) {
+            <div>{{ record }}</div>
+          }
+        </div>
+      }
+      <div class="streaks">
+        <div>
+          <span class="value">{{ message.data.currentStreak }}</span>
+          <span class="label">day streak</span>
+        </div>
+        <div>
+          <span class="value">{{ message.data.conversationStreak }}</span>
+          <span class="label">conversation streak</span>
+        </div>
+      </div>
+      <div class="best">
+        <span class="label">Best streak</span>
+        <span class="label">All</span>
+        <span class="label">Conversations</span>
+        @for (best of message.data.bestStreaks; track best.label) {
+          <span>{{ best.label }}</span>
+          @for (streak of [best.total, best.conversations]; track $index) {
+            <span class="value" [class.is-record]="streak.isRecord">
+              {{ streak.value }} {{ streak.value === 1 ? 'day' : 'days' }}
+              @if (streak.isRecord) {
+                <span class="record">new record</span>
+              }
+            </span>
+          }
+        }
+      </div>
+    </div>
+  </ng-template>
+</app-toast>

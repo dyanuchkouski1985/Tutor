@@ -1,0 +1,60 @@
+<div class="card" [class.wrong]="isWrong" [class.correct]="isCorrect">
+  <app-star [wordLearningProgress]="wordLearningProgress"></app-star>
+
+  <div class="card-body">
+    <div class="word-row">
+      <span class="word">{{ word }}</span>
+      <svg-icon
+        src="../../../assets/images/svg/play.svg"
+        class="pointer svg-icon-size-medium"
+        appTooltip="Listen"
+        tooltipPosition="bottom"
+        (click)="play.emit()"
+      ></svg-icon>
+      <svg-icon
+        src="../../../assets/images/svg/edit.svg"
+        class="pointer svg-icon-size-medium"
+        appTooltip="Edit word"
+        tooltipPosition="bottom"
+        (click)="open.emit()"
+      ></svg-icon>
+      @if (withHelp) {
+        <svg-icon
+          src="../../../assets/images/svg/help.svg"
+          class="svg-icon-size-medium"
+          appTooltip="Answered with help"
+          tooltipPosition="bottom"
+        ></svg-icon>
+      }
+      @if (isAnyNewPictureAvailable) {
+        <svg-icon
+          src="../../../assets/images/svg/new-picture.svg"
+          class="svg-icon-size-medium"
+          appTooltip="New pictures available"
+          tooltipPosition="bottom"
+        ></svg-icon>
+      }
+      <ng-content select="[wordActions]"></ng-content>
+    </div>
+
+    <div class="translations" [innerHTML]="translations"></div>
+
+    <ng-content></ng-content>
+
+    @if (usages.length) {
+      <ul class="usages">
+        @for (usage of usages; track usage) {
+          <li [innerHTML]="usage | highlightWord: word"></li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (pictureIds.length) {
+    <div class="pictures">
+      @for (pictureId of pictureIds; track pictureId) {
+        <app-image [src]="staticConfigService.pictureUrl(pictureId)" preview></app-image>
+      }
+    </div>
+  }
+</div>

@@ -1,6 +1,8 @@
 .result {
   color: var(--color-primary);
-  padding-bottom: 20px;
+  font-size: var(--font-size-x-large);
+  text-align: left;
+  padding: 20px 20px 40px;
 
   .home {
     position: absolute;
@@ -14,65 +16,51 @@
     }
   }
 
-  .result-list {
-    overflow-y: auto;
-    color: var(--color-primary-light);
-    font-size: xx-large;
+  .summary {
+    font-size: var(--font-size-xx-large);
+    text-align: center;
+    margin: 20px 0;
 
-    .usages {
-      margin: 0;
-
-      li {
-        color: var(--color-primary);
-        font-size: smaller;
-      }
-
-      .usage-text {
-        font-size: 20px;
-      }
-    }
-
-    .answer {
-      color: var(--color-primary-highlight);
-    }
-
-    p-table tr.wrong-answer {
-      .answer {
-        color: var(--color-error);
-      }
+    .summary-correct {
+      color: var(--color-green);
     }
   }
-}
 
-.usages li {
-  list-style-type: none;
-}
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
 
-.open-word-translations-dialog-icon {
-  color: var(--color-primary-highlight);
-  cursor: pointer;
-  text-decoration: underline;
-}
+  .your-answer {
+    color: var(--color-error);
+    text-decoration: line-through;
+    font-size: var(--font-size-medium);
+    margin-top: 4px;
+  }
 
-.new-pictures-available {
-  cursor: auto;
-  color: var(--color-secondary-highlight);
-  margin-right: 0;
-}
+  .repeat-unavailable {
+    margin-top: 12px;
+    text-align: center;
+    font-size: var(--font-size-medium);
+    color: var(--color-font-icons);
+  }
 
-.error-answer {
-  color: var(--color-error);
-}
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
 
-button {
-  margin-top: 2%;
-  margin-left: 10px;
-  margin-right: 10px;
-  background: var(--color-primary-light) !important;
-  font-family: cursive;
-  font-size: xx-large;
+    button {
+      font-size: var(--font-size-xx-large);
 
-  &.back {
-    background: var(--color-error) !important;
+      &.back {
+        background: var(--color-error) !important;
+        border-color: var(--color-error) !important;
+      }
+    }
   }
 }

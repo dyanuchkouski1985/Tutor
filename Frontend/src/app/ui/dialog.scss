@@ -1,0 +1,110 @@
+.ui-dialog-backdrop {
+  background: var(--ui-mask-background);
+  transition: opacity 0.15s;
+}
+
+.ui-dialog {
+  border: 1px solid var(--ui-dialog-border-color);
+  border-radius: var(--ui-radius-overlay);
+  background: var(--ui-dialog-background);
+  color: var(--ui-dialog-color);
+  box-shadow: var(--ui-dialog-shadow);
+  animation: ui-dialog-enter 300ms cubic-bezier(0.19, 1, 0.22, 1);
+  will-change: transform;
+
+  &.cdk-overlay-pane {
+    max-height: 90vh;
+  }
+
+  .cdk-dialog-container {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+    min-height: 0;
+    outline: none;
+  }
+}
+
+.ui-dialog-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: var(--ui-dialog-padding);
+}
+
+.ui-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  padding: var(--ui-dialog-padding);
+}
+
+.ui-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.ui-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ui-dialog-close-color);
+  cursor: pointer;
+  transition: background var(--ui-transition-duration);
+
+  &:hover {
+    background: var(--ui-dialog-close-hover-background);
+  }
+
+  &:focus-visible {
+    outline: var(--ui-focus-ring-width) var(--ui-focus-ring-style) var(--ui-focus-ring-color);
+    outline-offset: var(--ui-focus-ring-offset);
+  }
+}
+
+.ui-dialog-content {
+  flex-grow: 1;
+  min-height: 0;
+  padding: 0 var(--ui-dialog-padding);
+  overflow-y: auto;
+  border-radius: 5px;
+  background-clip: padding-box;
+}
+
+.ui-dialog.ui-dialog-leave {
+  animation: ui-dialog-leave 150ms ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes ui-dialog-leave {
+  to {
+    opacity: 0;
+    transform: scale(0.93);
+  }
+}
+
+@keyframes ui-dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.93);
+  }
+}
+
+.ui-overflow-hidden {
+  overflow: hidden;
+  padding-right: var(--ui-scrollbar-width);
+}
+
+.ui-dialog.ui-dialog-pending {
+  opacity: 0;
+  animation: none;
+}

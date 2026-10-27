@@ -21,16 +21,12 @@ public class CrosswordExerciseService(TutorContext dbContext, ISecurityContext s
         for (var i = 0; i < GeneralConstants.CrosswordBoardSize; i++)
             result.Board[i] = new BoardCell[GeneralConstants.CrosswordBoardSize];
 
-        var words = await dbContext.Words
+        var words = await GetAvailableWordsQuery(request.Language)
             .Include(w => w.UserWordLearningProgresses.Where(uwlp => uwlp.UserId == userId))
-            .Where(w =>
-                w.Language == request.Language && !EF.Functions.Like(w.Value, "% %") &&
-                w.Translations.Any(t => t.UserTranslations.Any(ut => ut.UserId == userId)) &&
-                w.UserWordLearningProgresses.Any(uwlp =>
-                    uwlp.UserId == userId && uwlp.LastLearningDate < DateTime.Now.Date &&
-                    (uwlp.WordLearningProgress == WordLearningProgress.None || uwlp.WordLearningProgress == WordLearningProgress.One
-                    || uwlp.WordLearningProgress == WordLearningProgress.Two || uwlp.WordLearningProgress == WordLearningProgress.Three)))
             .ToListAsync();
+
+        if (words.Count < GeneralConstants.CrosswordMinWordsCount)
+            return result;
 
         PutFirstHorizontalWordToTheBoard(result, words);
 
@@ -39,19 +35,20 @@ public class CrosswordExerciseService(TutorContext dbContext, ISecurityContext s
             var previousHorizontalWords = result.HorizontalWords.Count;
             var previousVerticalWords = result.VerticalWords.Count;
 
-            if (result.VerticalWords.Count < 6)
+            if (result.VerticalWords.Count < GeneralConstants.CrosswordWordsCountPerDirection)
             {
                 words = GetOrderedWords(words, result);
                 PutNextVerticalWordToTheBoard(result, words);
             }
 
-            if (result.HorizontalWords.Count < 6)
+            if (result.HorizontalWords.Count < GeneralConstants.CrosswordWordsCountPerDirection)
             {
                 words = GetOrderedWords(words, result);
                 PutNextHorizontalWordToTheBoard(result, words);
             }
 
-            if (result.VerticalWords.Count == 6 && result.HorizontalWords.Count == 6)
+            if (result.VerticalWords.Count == GeneralConstants.CrosswordWordsCountPerDirection
+                && result.HorizontalWords.Count == GeneralConstants.CrosswordWordsCountPerDirection)
                 break;
             if (result.VerticalWords.Count == previousVerticalWords &&
                 result.HorizontalWords.Count == previousHorizontalWords)
@@ -92,6 +89,23 @@ public class CrosswordExerciseService(TutorContext dbContext, ISecurityContext s
         result.HorizontalWords = result.HorizontalWords.OrderBy(w => w.StartY).ThenBy(w => w.StartX).ToList();
 
         return result;
+    }
+
+    public Task<int> CountAvailableWordsAsync(Language language) =>
+        GetAvailableWordsQuery(language).CountAsync();
+
+    private IQueryable<Word> GetAvailableWordsQuery(Language language)
+    {
+        var today = DateTime.Now.Date;
+
+        return dbContext.Words.Where(w =>
+            w.Language == language && !EF.Functions.Like(w.Value, "% %") &&
+            w.Value.Length < GeneralConstants.CrosswordBoardSize &&
+            w.Translations.Any(t => t.UserTranslations.Any(ut => ut.UserId == userId)) &&
+            w.UserWordLearningProgresses.Any(uwlp =>
+                uwlp.UserId == userId && uwlp.LastLearningDate < today &&
+                (uwlp.WordLearningProgress == WordLearningProgress.None || uwlp.WordLearningProgress == WordLearningProgress.One
+                || uwlp.WordLearningProgress == WordLearningProgress.Two || uwlp.WordLearningProgress == WordLearningProgress.Three)));
     }
 
     private void PutFirstHorizontalWordToTheBoard(CrosswordExerciseRepresentation result, List<Word> words)

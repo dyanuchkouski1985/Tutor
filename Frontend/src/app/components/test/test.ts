@@ -1,4 +1,11 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Subscription, timer } from 'rxjs';
 import Tasks from '../../../assets/data/tasks-b6.json';
 //import Tasks from "../../../assets/data/Vova/English/1.json";
@@ -8,12 +15,10 @@ import { DynamicConfigService } from '../../services/dynamic.config.service';
 import { SoundService } from '../../services/sound.service';
 
 import { RoundProgressModule } from 'angular-svg-round-progressbar';
-import { ProgressBarModule } from 'primeng/progressbar';
+import { ProgressBarComponent } from '../../ui/progress-bar';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { AutoFocusModule } from 'primeng/autofocus';
+import { AutoFocusDirective } from '../../ui/auto-focus';
 
 interface ITask {
   question: string;
@@ -25,16 +30,15 @@ interface ITask {
 @Component({
   selector: 'app-test',
   imports: [
+    AutoFocusDirective,
     FormsModule,
     RoundProgressModule,
-    ProgressBarModule,
-    ButtonModule,
-    InputTextModule,
-    AutoFocusModule,
+    ProgressBarComponent,
     SvgIconComponent,
-    ResultComponent
-],
+    ResultComponent,
+  ],
   templateUrl: './test.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./test.scss'],
 })
 export class TestComponent implements OnInit, OnDestroy {
@@ -113,7 +117,7 @@ export class TestComponent implements OnInit, OnDestroy {
         );
       }
       if (this.questionIndex == this.tasks.length) {
-        this.failedTasks.length == 0 ? this.soundService.success() : this.soundService.finish();
+        this.failedTasks.length == 0 ? this.soundService.celebrate() : this.soundService.finish();
       }
     } else {
       this.answer = this.answer.trim();

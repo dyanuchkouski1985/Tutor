@@ -1,0 +1,30 @@
+<div class="letter-hint">
+  <div class="cells">
+    @for (cell of cells; track $index) {
+      <input
+        class="ui-input"
+        #cell
+        type="text"
+        autocomplete="off"
+        [value]="cell ? cell.value : ''"
+        (keydown)="onCellKeyDown($event, $index)"
+        (input)="onCellInput($event, $index)"
+        (paste)="$event.preventDefault()"
+        (drop)="$event.preventDefault()"
+      />
+    }
+  </div>
+  <div class="tiles">
+    @for (tile of tiles; track $index) {
+      <span
+        class="tile"
+        [class.used]="tile.cellIndex !== null"
+        [class.pointer]="tile.cellIndex === null"
+        (mousedown)="$event.preventDefault()"
+        (click)="onTileClick(tile)"
+      >
+        {{ displayValue(tile.value) }}
+      </span>
+    }
+  </div>
+</div>

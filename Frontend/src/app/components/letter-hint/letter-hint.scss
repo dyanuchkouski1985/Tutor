@@ -1,0 +1,44 @@
+.letter-hint {
+  .cells {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    input {
+      border-radius: 0;
+      width: 64px;
+      font-size: var(--font-size-xx-large);
+      text-align: center;
+
+      &:hover {
+        border-color: var(--color-font-icons);
+      }
+    }
+  }
+
+  .tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin: 20px 0;
+
+    .tile {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #1f1f1f;
+      border-radius: 6px;
+      border: 1px solid var(--ui-input-border-color);
+      font-weight: bold;
+      font-size: var(--font-size-xx-large);
+      user-select: none;
+
+      &.used {
+        opacity: 0.2;
+      }
+    }
+  }
+}

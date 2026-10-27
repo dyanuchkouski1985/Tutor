@@ -17,6 +17,8 @@ export class CrosswordModel {
   }
 }
 
+export type CrosswordWordStatus = 'correct' | 'wrong';
+
 export class CrosswordWordModel {
   startY: number;
   startX: number;
@@ -28,6 +30,7 @@ export class CrosswordWordModel {
   pictureIds: number[];
   usages: string[];
   isAnyNewPictureAvailable = false;
+  status?: CrosswordWordStatus;
 
   constructor(
     startY: number,
@@ -58,6 +61,8 @@ export class CrosswordBoardCell {
   verticalWordId: number;
   horizontalWordId: number;
   answer: string;
+  isLocked?: boolean;
+  isRevealed?: boolean;
 
   constructor(
     direction: DirectionEnum,

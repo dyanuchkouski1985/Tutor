@@ -1,0 +1,100 @@
+.conversation-dialog-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 30px 5px 15px;
+
+  .context-container {
+    textarea {
+      width: 100%;
+    }
+  }
+
+  .auto-format-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    label {
+      cursor: pointer;
+    }
+
+    .learning-words-label {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+
+      app-star svg-icon svg {
+        width: 28px !important;
+        height: 28px !important;
+      }
+    }
+  }
+
+  .participants-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .participant-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .participant-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+
+      .participant-name input {
+        width: 150px;
+      }
+
+      .participant-gender {
+        flex: none;
+      }
+
+      .participant-description {
+        flex: 1;
+
+        textarea {
+          width: 100%;
+        }
+      }
+    }
+
+    .add-participant-icon {
+      align-self: flex-start;
+    }
+  }
+
+  .field-issue {
+    margin-top: 6px;
+    color: var(--color-error);
+    text-align: left;
+
+    .field-issue-suggestion {
+      opacity: 0.8;
+      font-style: italic;
+    }
+  }
+
+  .reason-container {
+    color: var(--color-error);
+  }
+
+  .actions-container {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      gap: 10px;
+    }
+
+    .generate-button {
+      margin-right: auto;
+    }
+  }
+}

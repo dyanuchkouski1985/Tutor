@@ -14,7 +14,7 @@ export class JwtInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) {}
 
   private handleAuthError(err: HttpErrorResponse): Observable<never> {
-    if (err.status === 401 || err.status === 403) {
+    if (err.status === 401) {
       this.authService.login();
     }
     return throwError(() => err);

@@ -1,0 +1,71 @@
+.exercise-popularity {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: var(--color-primary);
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .empty {
+    text-align: center;
+    opacity: 0.7;
+  }
+
+  .rows {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
+    gap: 8px 10px;
+  }
+
+  .row {
+    display: contents;
+
+    &.zero > * {
+      opacity: 0.45;
+    }
+  }
+
+  .row-icon {
+    display: block;
+    width: 28px;
+    height: 28px;
+    fill: var(--color-font-icons);
+
+    ::ng-deep svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  .row-label {
+    white-space: nowrap;
+  }
+
+  .bar {
+    display: block;
+    min-width: 40px;
+    height: 10px;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 5px;
+    background: var(--color-font-icons);
+  }
+
+  .row-value {
+    white-space: nowrap;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}

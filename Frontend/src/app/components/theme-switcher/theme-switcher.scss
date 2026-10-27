@@ -1,13 +1,11 @@
+.mode-container,
 .primary-colors-container,
-.surface-colors-container,
-.preset-container,
-.ripple-container {
+.surface-colors-container {
   display: flex;
   flex-direction: column;
 
   .primary-color,
-  .surface-color,
-  .preset-label {
+  .surface-color {
     display: flex;
     gap: 8px;
 
@@ -19,6 +17,8 @@
       outline: 2px solid transparent;
       outline-offset: 3px;
       cursor: pointer;
+      animation: ui-popover-item-enter 0.35s ease-out backwards;
+      animation-delay: calc(var(--index) * 14ms + 60ms);
       transition:
         outline-color 0.2s ease,
         transform 0.15s ease;

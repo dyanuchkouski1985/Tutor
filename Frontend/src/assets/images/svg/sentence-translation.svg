@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="122.88" height="122.88" viewBox="0 0 122.88 122.88">
+ <defs><clipPath id="sentence-translation-back"><path d="M0,0H122.88V40H34V122.88H0Z"/></clipPath></defs>
+ <g>
+  <path fill-rule="evenodd" clip-rule="evenodd" clip-path="url(#sentence-translation-back)" d="M14,6H48A10,10 0 0 1 58,16V50A10,10 0 0 1 48,60H14A10,10 0 0 1 4,50V16A10,10 0 0 1 14,6Z M14,13H48A3,3 0 0 1 51,16V50A3,3 0 0 1 48,53H14A3,3 0 0 1 11,50V16A3,3 0 0 1 14,13Z"/>
+  <path clip-path="url(#sentence-translation-back)" d="M16.5,29.5H35.5A3.5,3.5 0 0 1 39,33V33A3.5,3.5 0 0 1 35.5,36.5H16.5A3.5,3.5 0 0 1 13,33V33A3.5,3.5 0 0 1 16.5,29.5Z M41.5,33A3.5,3.5 0 1 0 48.5,33A3.5,3.5 0 1 0 41.5,33Z"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M50,46H84A10,10 0 0 1 94,56V90A10,10 0 0 1 84,100H50A10,10 0 0 1 40,90V56A10,10 0 0 1 50,46Z M50,53H84A3,3 0 0 1 87,56V90A3,3 0 0 1 84,93H50A3,3 0 0 1 47,90V56A3,3 0 0 1 50,53Z"/>
+  <path d="M52.25,70.75H81.75A2.25,2.25 0 0 1 84,73V73A2.25,2.25 0 0 1 81.75,75.25H52.25A2.25,2.25 0 0 1 50,73V73A2.25,2.25 0 0 1 52.25,70.75Z"/>
+  <path d="M101,64A8,8 0 1 0 117,64A8,8 0 1 0 101,64Z M96,89A13,13 0 0 1 122,89Z"/>
+ </g>
+</svg>

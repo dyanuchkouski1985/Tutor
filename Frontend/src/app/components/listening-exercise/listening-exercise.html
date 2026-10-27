@@ -1,0 +1,273 @@
+@if (isUnavailable) {
+  <app-exercise-unavailable
+    message="Listening scenes are available for English only."
+  ></app-exercise-unavailable>
+} @else {
+  <div class="listening-exercise">
+    @if (!isStarted) {
+      <app-select-button
+        [options]="translationLanguageOptions"
+        [ngModel]="translationLanguage"
+        (ngModelChange)="onTranslationLanguageChange($event)"
+        [disabled]="isBusy"
+        optionLabel="label"
+        optionValue="value"
+      />
+    }
+
+    @if (error) {
+      <div class="error">{{ error }}</div>
+    }
+
+    @if (exercise) {
+      @if (exercise.situation) {
+        <div class="situation">{{ exercise.situation }}</div>
+      }
+
+      <div class="player">
+        <div class="speed-dock">
+          @for (rate of playbackRates; track rate) {
+            <div
+              class="speed-item"
+              [class.selected]="rate === playbackRate"
+              (click)="onSetPlaybackRate(rate)"
+            >
+              <span class="speed-label">{{ rate }}×</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="progressbar-container">
+        <app-progress-bar [value]="playedPercent" />
+      </div>
+
+      @if (dynamicConfigService.muteSound) {
+        <div class="error">Sound is off. Turn it on to listen to the scene.</div>
+      }
+
+      @if (isTextShown) {
+        <div class="transcript selectable">
+          @if (hasTranslations) {
+            <div class="transcript-header">
+              <span class="transcript-tip">Tap the icon before a line to see its translation</span>
+              <button
+                type="button"
+                class="ui-button translations-button"
+                (click)="onToggleAllTranslations()"
+              >
+                {{ areAllTranslationsShown ? 'Hide translations' : 'Show all translations' }}
+              </button>
+            </div>
+          }
+          @for (line of lines; track $index) {
+            <div class="line" [class.current]="isPlaying && $index === lineIndex">
+              <span class="line-gutter">
+                @if (hasTranslations && line.translation) {
+                  <svg-icon
+                    src="../../../assets/images/svg/translate.svg"
+                    class="translate-icon pointer svg-icon-size-medium"
+                    [class.active]="shownTranslations.has($index)"
+                    [appTooltip]="
+                      shownTranslations.has($index) ? 'Hide translation' : 'Translation'
+                    "
+                    tooltipPosition="top"
+                    (mousedown)="$event.preventDefault()"
+                    (click)="onToggleTranslation($index)"
+                  ></svg-icon>
+                }
+              </span>
+              <div class="line-content">
+                <span
+                  class="speaker pointer"
+                  appTooltip="Play this line"
+                  tooltipPosition="top"
+                  (click)="onPlayLine($index)"
+                  >{{ participantName(line.participantId) }}:</span
+                >
+                {{ line.text }}
+                @if (hasTranslations && shownTranslations.has($index)) {
+                  <div class="translation">{{ line.translation }}</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (isFirstListenDone) {
+        <div class="questions">
+          @for (question of questions; track $index; let questionIndex = $index) {
+            <div class="question">
+              <div class="question-text">{{ questionIndex + 1 }}. {{ question.text }}</div>
+              <div
+                class="question-body"
+                [class.correct]="results[questionIndex]?.isCorrect === true"
+                [class.wrong]="results[questionIndex]?.isCorrect === false"
+              >
+                <div class="options">
+                  @for (option of question.options; track $index; let optionIndex = $index) {
+                    <button
+                      type="button"
+                      class="option"
+                      [class.selected]="answers[questionIndex] === optionIndex"
+                      [class.correct]="results[questionIndex]?.correctOption === optionIndex"
+                      [class.wrong]="
+                        !!results[questionIndex] &&
+                        answers[questionIndex] === optionIndex &&
+                        results[questionIndex]?.correctOption !== optionIndex
+                      "
+                      [disabled]="!!results[questionIndex] || isBusy"
+                      (click)="onSelectOption(questionIndex, optionIndex)"
+                    >
+                      {{ option }}
+                    </button>
+                  }
+                </div>
+                <div class="question-action">
+                  <button
+                    type="button"
+                    class="ui-button ui-button-success check-button"
+                    [class.hidden]="!!results[questionIndex]"
+                    [disabled]="
+                      answers[questionIndex] === null || !!results[questionIndex] || isBusy
+                    "
+                    (click)="onCheck(questionIndex)"
+                  >
+                    Check
+                  </button>
+                  @if (results[questionIndex]; as result) {
+                    <span class="question-points" [class.zero]="!result.points"
+                      >+{{ result.points }}</span
+                    >
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (isFinished) {
+          <div class="summary">
+            <span class="summary-correct">{{ correctCount }}</span> of
+            {{ questions.length }} correct
+            <span class="summary-points" [class.zero]="!totalPoints">+{{ totalPoints }}</span>
+          </div>
+          <div class="buttons">
+            <button
+              type="button"
+              class="ui-button listen-again-button"
+              (click)="isPlaying ? onStopListening() : onReplay()"
+            >
+              {{ isPlaying ? 'Stop' : 'Listen again' }}
+            </button>
+            <button
+              #repeatButton
+              type="button"
+              class="ui-button ui-button-success"
+              [disabled]="!isRepeatAvailable"
+              (click)="onRepeat()"
+            >
+              Repeat
+            </button>
+            <button type="button" class="ui-button back" (click)="onHome()">Home</button>
+          </div>
+        } @else {
+          <div class="points-info" [class.reduced]="pointsPerAnswer < correctPoints">
+            {{ pointsPerAnswer }} {{ pointsPerAnswer === 1 ? 'point' : 'points' }} per correct
+            answer
+          </div>
+
+          @if (isHelpShown) {
+            <div class="hints">
+              <div
+                class="hint"
+                [appTooltip]="canReplay ? '' : 'You can listen to the scene again only once'"
+                tooltipPosition="top"
+              >
+                <svg-icon
+                  src="../../../assets/images/svg/repeat.svg"
+                  class="hint-icon pointer"
+                  [class.disabled]="!canReplay"
+                  (click)="onReplay()"
+                ></svg-icon>
+                @if (isListeningFree) {
+                  <span class="hint-label">Listen again</span>
+                } @else if (isReplayed) {
+                  <span class="hint-label">Used</span>
+                } @else {
+                  <span class="hint-label cost">
+                    Listen again from the start · then {{ replayedPoints }} points per correct
+                    answer instead of {{ correctPoints }}
+                  </span>
+                }
+              </div>
+              @if (!isTextShown) {
+                <div class="hint">
+                  <button type="button" class="ui-button show-text-button" (click)="onShowText()">
+                    Show text
+                  </button>
+                  <span class="hint-label cost">
+                    then {{ textShownPoints }} point per correct answer instead of
+                    {{ pointsPerAnswer }}
+                  </span>
+                </div>
+              }
+            </div>
+          } @else {
+            <svg-icon
+              src="../../../assets/images/svg/help.svg"
+              class="help-icon pointer"
+              [class.disabled]="isBusy"
+              appTooltip="Hints"
+              tooltipPosition="top"
+              (click)="onHelp()"
+            ></svg-icon>
+          }
+        }
+      } @else if (!isStarted) {
+        <div class="buttons">
+          <button
+            #startButton
+            type="button"
+            class="ui-button ui-button-success"
+            (click)="onStart()"
+          >
+            Start listening
+          </button>
+        </div>
+        <div class="questions-placeholder">
+          Read the situation, then start. The scene plays once; the questions appear after it.
+        </div>
+      } @else {
+        <div class="questions-placeholder">The questions appear after you listen to the scene.</div>
+      }
+    } @else if (error && !isBusy) {
+      <div class="buttons">
+        <button type="button" class="ui-button ui-button-success" (click)="onRepeat()">
+          Try again
+        </button>
+        <button type="button" class="ui-button back" (click)="onHome()">Home</button>
+      </div>
+    }
+  </div>
+}
+
+@if (selectedText) {
+  <svg-icon
+    src="../../../assets/images/svg/arrow-up-right.svg"
+    class="selected-text-icon pointer svg-icon-size-medium"
+    [style.top.px]="selectionTop"
+    [style.left.px]="selectionLeft"
+    appTooltip="Open in words"
+    tooltipPosition="top"
+    (mousedown)="$event.preventDefault()"
+    (click)="onOpenWordTranslationsDialog()"
+  ></svg-icon>
+}
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

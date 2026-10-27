@@ -1,59 +1,61 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
-import { AutoCompleteCompleteEvent, AutoCompleteModule } from 'primeng/autocomplete';
+import {
+  afterNextRender,
+  Component,
+  Injector,
+  OnInit,
+  Optional,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ApiService } from '../../services/api.service';
-import { Suggestion, WordSuggestions } from '../../models/word-suggestions';
-import { finalize, take } from 'rxjs/operators';
+import { Suggestion, WordSuggestions, WordSuggestionsResult } from '../../models/word-suggestions';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, finalize, map, take } from 'rxjs/operators';
 import { WordTranslations } from '../../models/word-translations';
 import { Translation } from '../../models/translation';
-import { MessageService } from 'primeng/api';
-import { PickList, PickListModule } from 'primeng/picklist';
 import { Usage } from '../../models/usage';
 import { Picture } from '../../models/picture';
 import { StaticConfigService } from '../../services/static.config.service';
+import { DynamicConfigService } from '../../services/dynamic.config.service';
+import { TranslationLanguageEnum } from '../../enums/translation-language.enum';
+import { LanguageEnum } from '../../enums/language.enum';
 import { UserStatisticsService } from '../../services/user-statistics.service';
 import { SoundService } from '../../services/sound.service';
 import { WordLearningProgressEnum } from '../../enums/word-learning-progress.enum';
-import { DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { DialogConfig, DialogRef } from '../../ui/dialog';
+import { AutocompleteComponent, AutocompleteCompleteEvent } from '../../ui/autocomplete';
+import { PickListComponent, PickListMoveEvent } from '../../ui/pick-list';
 import { CommonModule } from '@angular/common';
 import { StarComponent } from '../star/star';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { FloatLabelModule } from 'primeng/floatlabel';
 import { FormsModule } from '@angular/forms';
 import { SvgIconComponent } from 'angular-svg-icon';
-import { DialogModule } from 'primeng/dialog';
-import { FileUploadModule } from 'primeng/fileupload';
-import { ImageModule } from 'primeng/image';
-import { ToastModule } from 'primeng/toast';
-import { CheckboxModule } from 'primeng/checkbox';
-import { PopoverModule } from 'primeng/popover';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { AutoFocusModule } from 'primeng/autofocus';
-import { RippleModule } from 'primeng/ripple';
+import { FileDropComponent } from '../../ui/file-drop';
+import { ImageComponent } from '../../ui/image';
+import { ToastComponent, ToastService } from '../../ui/toast';
+import { PopoverComponent } from '../../ui/popover';
+import { SelectButtonComponent } from '../../ui/select-button';
+import { TooltipDirective } from '../../ui/tooltip';
+import { AutoFocusDirective } from '../../ui/auto-focus';
 
 @Component({
   selector: 'app-word-translations-dialog',
   imports: [
-    AutoFocusModule,
+    AutoFocusDirective,
     CommonModule,
-    InputTextModule,
-    InputGroupModule,
-    FloatLabelModule,
-    AutoCompleteModule,
+    AutocompleteComponent,
     FormsModule,
-    DialogModule,
-    PickListModule,
-    FileUploadModule,
-    ImageModule,
-    ToastModule,
-    CheckboxModule,
-    PopoverModule,
-    ButtonModule,
-    RippleModule,
+    PickListComponent,
+    FileDropComponent,
+    ImageComponent,
+    ToastComponent,
+    PopoverComponent,
+    SelectButtonComponent,
+    TooltipDirective,
     SvgIconComponent,
     StarComponent,
   ],
   templateUrl: './word-translations-dialog.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./word-translations-dialog.scss'],
 })
 export class WordTranslationsDialogComponent implements OnInit {
@@ -61,8 +63,6 @@ export class WordTranslationsDialogComponent implements OnInit {
   @ViewChild('panelUploadWordPronunciation') panelUploadWordPronunciation: any;
   @ViewChild('panelNewTranslation') panelNewTranslation: any;
   @ViewChild('panelNewUsage') panelNewUsage: any;
-  @ViewChild('translationsPickList') translationsPickList: PickList;
-  @ViewChild('usagesPickList') usagesPickList: PickList;
 
   suggestions: Suggestion[] = [];
   word: '';
@@ -80,7 +80,13 @@ export class WordTranslationsDialogComponent implements OnInit {
   othersUsages: Usage[] = [];
   isNewWord = true;
   isBusy = false;
+  isSuggesting = false;
   wordLearningProgressEnum = WordLearningProgressEnum;
+  translationLanguageOptions = [
+    { label: 'RU', value: TranslationLanguageEnum.Russian },
+    { label: 'PL', value: TranslationLanguageEnum.Polish },
+    { label: 'EN', value: TranslationLanguageEnum.English },
+  ];
   initialLearningProgress: WordLearningProgressEnum;
   availableWordLearningProgresses: WordLearningProgressEnum[] = [];
   flipLearningProgressIcon = false;
@@ -92,20 +98,40 @@ export class WordTranslationsDialogComponent implements OnInit {
 
   constructor(
     public readonly staticConfigService: StaticConfigService,
-    private config: DynamicDialogConfig,
+    public readonly dynamicConfigService: DynamicConfigService,
+    private config: DialogConfig,
     private readonly apiService: ApiService,
     private readonly userStatisticsService: UserStatisticsService,
     private readonly soundService: SoundService,
-    private readonly messageService: MessageService,
+    private readonly toastService: ToastService,
+    private readonly injector: Injector,
+    @Optional() private readonly dialogRef: DialogRef | null,
   ) {}
 
   ngOnInit() {
+    const learnedLanguage =
+      this.dynamicConfigService.language === LanguageEnum.Polish
+        ? TranslationLanguageEnum.Polish
+        : TranslationLanguageEnum.English;
+
+    this.translationLanguageOptions = this.translationLanguageOptions.filter(
+      (option) => option.value !== learnedLanguage,
+    );
+
+    if (this.dynamicConfigService.translationLanguage === learnedLanguage) {
+      this.dynamicConfigService.translationLanguage = TranslationLanguageEnum.Russian;
+    }
+
     if (this.config?.data) {
       this.word = this.config.data.word;
       this.onWordSaved = this.config.data.onWordSaved;
       if (this.word) {
-        this.onCheckNewWord();
+        this.onCheckNewWord(true);
       }
+    }
+
+    if (!this.word) {
+      this.revealDialog();
     }
 
     this.getSuggestions();
@@ -138,7 +164,7 @@ export class WordTranslationsDialogComponent implements OnInit {
     }
   }
 
-  onComplete(event: AutoCompleteCompleteEvent) {
+  onComplete(event: AutocompleteCompleteEvent) {
     this.suggestions = [];
     this.wordTranslations = null;
     this.wordPronunciation = null;
@@ -171,7 +197,7 @@ export class WordTranslationsDialogComponent implements OnInit {
         this.flipPronunciationIcon = true;
       });
     } else {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Only audio format is supported.',
@@ -188,7 +214,7 @@ export class WordTranslationsDialogComponent implements OnInit {
     this.wordPronunciationAudio.play();
   }
 
-  onCheckNewWord() {
+  onCheckNewWord(isInitialLoad = false) {
     setTimeout(() => {
       this.isBusy = true;
     });
@@ -197,7 +223,12 @@ export class WordTranslationsDialogComponent implements OnInit {
       .getWordTranslations(this.word)
       .pipe(
         take(1),
-        finalize(() => (this.isBusy = false)),
+        finalize(() => {
+          this.isBusy = false;
+          if (isInitialLoad) {
+            this.revealDialog();
+          }
+        }),
       )
       .subscribe((data) => {
         this.wordTranslations = data;
@@ -228,6 +259,10 @@ export class WordTranslationsDialogComponent implements OnInit {
       });
   }
 
+  private revealDialog() {
+    afterNextRender(() => this.dialogRef?.ready(), { injector: this.injector });
+  }
+
   onShowEditProgressPanel(event: any) {
     if (this.initialLearningProgress !== WordLearningProgressEnum.None) {
       this.panelEditLearningProgress.toggle(event);
@@ -243,7 +278,7 @@ export class WordTranslationsDialogComponent implements OnInit {
   onEditTranslationCompleted(panelEditTranslation: any) {
     this.editingTranslationValue = this.editingTranslationValue.trim();
     if (!this.editingTranslationValue.length) {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'At least one none space symbol should be used.',
@@ -266,7 +301,7 @@ export class WordTranslationsDialogComponent implements OnInit {
   onEditUsageCompleted(panelEditUsage: any) {
     this.editingUsageValue = this.editingUsageValue.trim();
     if (!this.editingUsageValue.length) {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'At least one none space symbol should be used.',
@@ -280,10 +315,138 @@ export class WordTranslationsDialogComponent implements OnInit {
     panelEditUsage.hide();
   }
 
+  onSuggestTranslations() {
+    this.runSuggestions(() => [this.suggestTranslations()]);
+  }
+
+  onSuggestUsages() {
+    this.runSuggestions(() => [this.suggestUsages()]);
+  }
+
+  onSuggestAll() {
+    this.runSuggestions(() => [this.suggestTranslations(), this.suggestUsages()]);
+  }
+
+  private runSuggestions(build: () => Observable<() => boolean>[]) {
+    if (!this.word || !this.wordTranslations || this.isBusy) {
+      return;
+    }
+
+    this.isBusy = true;
+    this.isSuggesting = true;
+
+    forkJoin(build())
+      .pipe(
+        finalize(() => {
+          this.isBusy = false;
+          this.isSuggesting = false;
+        }),
+      )
+      .subscribe((applies) => {
+        const added = applies.map((apply) => apply());
+
+        if (added.some(Boolean)) {
+          this.soundService.correct();
+        }
+      });
+  }
+
+  private suggestTranslations() {
+    const existing = [...this.myTranslations, ...this.othersTranslations].map(
+      (translation) => translation.value,
+    );
+
+    return this.suggest(
+      this.apiService.suggestWordTranslations(this.word, existing),
+      existing,
+      'translations',
+      (value, position) => {
+        const translation = new Translation(0, 0, false, position, value);
+
+        this.wordTranslations?.translations.push(translation);
+        this.othersTranslations = [...this.othersTranslations, translation];
+      },
+    );
+  }
+
+  private suggestUsages() {
+    const existing = [...this.myUsages, ...this.othersUsages].map((usage) => usage.value);
+
+    return this.suggest(
+      this.apiService.suggestWordUsages(this.word, existing),
+      existing,
+      'usages',
+      (value, position) => {
+        const usage = new Usage(0, 0, false, position, value);
+
+        this.wordTranslations?.usages.push(usage);
+        this.othersUsages = [...this.othersUsages, usage];
+      },
+    );
+  }
+
+  private suggest(
+    request: Observable<WordSuggestionsResult>,
+    existing: string[],
+    label: string,
+    add: (value: string, position: number) => void,
+  ): Observable<() => boolean> {
+    return request.pipe(
+      take(1),
+      catchError((error) => of({ items: [], error: error.message } as WordSuggestionsResult)),
+      map((result) => () => this.applySuggestions(result, existing, label, add)),
+    );
+  }
+
+  private applySuggestions(
+    result: WordSuggestionsResult,
+    existing: string[],
+    label: string,
+    add: (value: string, position: number) => void,
+  ) {
+    if (result.error) {
+      this.toastService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: result.error,
+        life: 5000,
+      });
+      return false;
+    }
+
+    const suggested = result.items ?? [];
+
+    if (!suggested.length) {
+      this.toastService.add({
+        severity: 'error',
+        summary: 'Nothing suggested',
+        detail: `The language model had no ${label} to suggest for '${this.word}'.`,
+        life: 3000,
+      });
+      return false;
+    }
+
+    const known = new Set(existing.map((item) => item.toLowerCase()));
+    const items = suggested.filter((item) => !known.has(item.toLowerCase()));
+
+    if (!items.length) {
+      this.toastService.add({
+        severity: 'error',
+        summary: 'Nothing new',
+        detail: `No ${label} beyond what you already have.`,
+        life: 3000,
+      });
+      return false;
+    }
+
+    items.forEach((item, index) => add(item, index));
+    return true;
+  }
+
   onAddNewTranslation() {
     this.newTranslation = this.newTranslation.trim();
     if (!this.newTranslation.length) {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'At least one none space symbol should be used.',
@@ -297,7 +460,7 @@ export class WordTranslationsDialogComponent implements OnInit {
         (t) => t.value.toLowerCase() === this.newTranslation.toLowerCase(),
       )
     ) {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Duplicated',
         detail: `Translation '${this.newTranslation}' already exists`,
@@ -322,7 +485,7 @@ export class WordTranslationsDialogComponent implements OnInit {
   onAddNewUsage() {
     this.newUsage = this.newUsage.trim();
     if (!this.newUsage.length) {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'At least one none space symbol should be used.',
@@ -336,7 +499,7 @@ export class WordTranslationsDialogComponent implements OnInit {
         (u) => u.value.toLowerCase() === this.newUsage.toLowerCase(),
       )
     ) {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Duplicated',
         detail: `Usage '${this.newUsage}' already exists`,
@@ -352,7 +515,7 @@ export class WordTranslationsDialogComponent implements OnInit {
     this.panelNewUsage.hide();
   }
 
-  onMoveToTarget(event: { items: any[] }) {
+  onMoveToTarget(event: PickListMoveEvent<Translation>) {
     if (!this.myTranslations.some((t) => t.id === event.items[0].id)) {
       this.myTranslations = [...this.myTranslations, ...event.items];
     }
@@ -360,22 +523,12 @@ export class WordTranslationsDialogComponent implements OnInit {
     this.othersTranslations = this.othersTranslations.filter((i) => !event.items.includes(i));
   }
 
-  onMoveToSource(event: { items: any[] }) {
+  onMoveToSource(event: PickListMoveEvent<Translation>) {
     if (!this.othersTranslations.some((t) => t.id === event.items[0].id)) {
       this.othersTranslations = [...this.othersTranslations, ...event.items];
     }
 
     this.myTranslations = this.myTranslations.filter((i) => !event.items.includes(i));
-  }
-
-  clearTranslationsSelection() {
-    this.translationsPickList.selectedItemsTarget = [];
-    this.translationsPickList.selectedItemsSource = [];
-  }
-
-  clearUsagesSelection() {
-    this.usagesPickList.selectedItemsTarget = [];
-    this.usagesPickList.selectedItemsSource = [];
   }
 
   onNewTranslationOverlayHide() {
@@ -400,7 +553,7 @@ export class WordTranslationsDialogComponent implements OnInit {
         ),
       );
     } else {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'Only image format is supported.',
@@ -427,7 +580,7 @@ export class WordTranslationsDialogComponent implements OnInit {
     }
 
     if (!this.myTranslations.length) {
-      this.messageService.add({
+      this.toastService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'At least one translation should be added.',
@@ -461,6 +614,9 @@ export class WordTranslationsDialogComponent implements OnInit {
     );
     this.wordTranslations.pronunciation = this.wordPronunciation;
 
+    const unsavedTranslations = this.othersTranslations.filter((t) => !t.id);
+    const unsavedUsages = this.othersUsages.filter((u) => !u.id);
+
     this.isBusy = true;
     this.apiService
       .putWordTranslations(this.wordTranslations)
@@ -477,7 +633,7 @@ export class WordTranslationsDialogComponent implements OnInit {
           if (!this.wordTranslations) {
             return;
           }
-          this.onWordSaved(this.wordTranslations);
+          this.onWordSaved?.(this.wordTranslations);
 
           this.flipLearningProgressIcon = this.isNewWord;
           this.flipPronunciationIcon = this.isNewWord;
@@ -485,6 +641,12 @@ export class WordTranslationsDialogComponent implements OnInit {
           this.isNewWord =
             this.wordTranslations.translations.every((t) => !t.userTranslationId) === true;
           this.wordTranslations.userUpload = !this.isNewWord;
+          this.wordTranslations.translations.push(
+            ...this.notReturned(unsavedTranslations, this.wordTranslations.translations),
+          );
+          this.wordTranslations.usages.push(
+            ...this.notReturned(unsavedUsages, this.wordTranslations.usages),
+          );
           this.myTranslations = this.wordTranslations.translations.filter(
             (t) => !!t.userTranslationId,
           );
@@ -504,7 +666,7 @@ export class WordTranslationsDialogComponent implements OnInit {
           this.getSuggestions();
         },
         error: (error) => {
-          this.messageService.add({
+          this.toastService.add({
             severity: 'error',
             summary: 'Error',
             detail: error.message,
@@ -545,6 +707,11 @@ export class WordTranslationsDialogComponent implements OnInit {
         this.availableWordLearningProgresses.push(progress);
       }
     }
+  }
+
+  private notReturned<T extends { value: string }>(unsaved: T[], returned: T[]): T[] {
+    const known = new Set(returned.map((item) => item.value.toLowerCase()));
+    return unsaved.filter((item) => !known.has(item.value.toLowerCase()));
   }
 
   private getSuggestions() {

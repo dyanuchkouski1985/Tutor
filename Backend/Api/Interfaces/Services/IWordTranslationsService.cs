@@ -12,5 +12,7 @@ public interface IWordTranslationsService
     Task<bool> DeleteAsync(int wordId);
     Task<Page<WordTranslationsRepresentation>> SearchAsync(SearchWordTranslationsRequest request);
     Task<Dictionary<char, SuggestionRepresentation[]>> SuggestionsAsync(Language language);
+    Task<WordSuggestionsRepresentation> SuggestTranslationsAsync(SuggestWordItemsRequest request);
+    Task<WordSuggestionsRepresentation> SuggestUsagesAsync(SuggestWordItemsRequest request);
     Task AddPronunciationsAsync(Language language);
 }

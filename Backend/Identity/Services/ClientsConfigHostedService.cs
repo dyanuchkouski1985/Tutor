@@ -85,13 +85,12 @@ public class ClientsConfigHostedService(IServiceProvider serviceProvider, IConfi
 
         if (await manager.FindByClientIdAsync("tutor-client", cancellationToken) is null)
         {
-            // TODO: Add RedirectUris and PostLogoutRedirectUris to appsettings.
-            await manager.CreateAsync(new OpenIddictApplicationDescriptor
+            var descriptor = new OpenIddictApplicationDescriptor
             {
                 ClientId = "tutor-client",
                 DisplayName = "tutor-client",
-                RedirectUris = { new Uri("http://localhost:4200"), new Uri(configuration["AppEndpoint"]), new Uri(configuration["SilentRenewAppEndpoint"]) },
-                PostLogoutRedirectUris = { new Uri("http://localhost:4200"), new Uri(configuration["PostLogoutAppEndpoint"]) },
+                RedirectUris = { new Uri("http://localhost:4200") },
+                PostLogoutRedirectUris = { new Uri("http://localhost:4200") },
                 Permissions =
                 {
                     OpenIddictConstants.Permissions.Endpoints.Authorization,
@@ -108,7 +107,18 @@ public class ClientsConfigHostedService(IServiceProvider serviceProvider, IConfi
 
                     OpenIddictConstants.Permissions.ResponseTypes.Code
                 }
-            }, cancellationToken);
+            };
+
+            // These are empty unless the environment overrides them, and new Uri("") throws.
+            var appEndpoint = configuration["AppEndpoint"];
+            if (!string.IsNullOrWhiteSpace(appEndpoint))
+                descriptor.RedirectUris.Add(new Uri(appEndpoint));
+
+            var postLogoutAppEndpoint = configuration["PostLogoutAppEndpoint"];
+            if (!string.IsNullOrWhiteSpace(postLogoutAppEndpoint))
+                descriptor.PostLogoutRedirectUris.Add(new Uri(postLogoutAppEndpoint));
+
+            await manager.CreateAsync(descriptor, cancellationToken);
         }
     }
 

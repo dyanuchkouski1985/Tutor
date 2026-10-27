@@ -1,0 +1,45 @@
+<div class="exercise-popularity">
+  <div class="toolbar">
+    <app-select-button
+      [options]="periodOptions"
+      [(ngModel)]="months"
+      (selectionChange)="load()"
+      size="small"
+      optionLabel="label"
+      optionValue="value"
+    />
+    <app-select-button
+      [options]="scopeOptions"
+      [(ngModel)]="isAllUsers"
+      (selectionChange)="load()"
+      size="small"
+      optionLabel="label"
+      optionValue="value"
+    />
+  </div>
+
+  @if (isLoaded && !hasData) {
+    <div class="empty">No exercise finished in this period yet.</div>
+  }
+
+  <div class="rows">
+    @for (row of rows; track row.label) {
+      <div class="row" [class.zero]="!row.days">
+        <svg-icon
+          [src]="'../../../assets/images/svg/' + row.icon + '.svg'"
+          class="row-icon"
+        ></svg-icon>
+        <span class="row-label">{{ row.label }}</span>
+        <span class="bar">
+          <span class="bar-fill" [style.width.%]="row.barPercent"></span>
+        </span>
+        <span class="row-value"
+          >{{ row.percentage }}%
+          @if (!isAllUsersShown) {
+            · {{ row.days }} {{ row.days === 1 ? 'day' : 'days' }}
+          }
+        </span>
+      </div>
+    }
+  </div>
+</div>

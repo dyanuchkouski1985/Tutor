@@ -9,3 +9,8 @@ export class Suggestion {
   value: string;
   learningProgress: WordLearningProgressEnum | null;
 }
+
+export class WordSuggestionsResult {
+  items: string[] = [];
+  error: string;
+}

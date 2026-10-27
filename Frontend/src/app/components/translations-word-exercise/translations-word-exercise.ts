@@ -3,14 +3,15 @@ import {
   ElementRef,
   OnDestroy,
   OnInit,
-  QueryList,
   ViewChild,
-  ViewChildren,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Subscription, timer } from 'rxjs';
 import { StaticConfigService } from '../../services/static.config.service';
 import { DynamicConfigService } from '../../services/dynamic.config.service';
 import { ApiService } from '../../services/api.service';
+import { ExerciseCompletionsService } from '../../services/exercise-completions.service';
+import { ExerciseTypeEnum } from '../../enums/exercise-type.enum';
 import { UserStatisticsService } from '../../services/user-statistics.service';
 import { SoundService } from '../../services/sound.service';
 import { WordLearningProgressEnum } from '../../enums/word-learning-progress.enum';
@@ -19,17 +20,18 @@ import { ExerciseWordResult } from '../../models/exercise-word-result';
 import { ExerciseWordStatistic } from '../../models/exercise-word-statistic';
 import { CommonModule } from '@angular/common';
 import { StarComponent } from '../star/star';
+import { HighlightWordPipe } from '../../pipes/highlightWord';
 import { RoundprogressModule } from 'angular-svg-round-progressbar';
-import { ImageModule } from 'primeng/image';
+import { ImageComponent } from '../../ui/image';
 import { SvgIconComponent } from 'angular-svg-icon';
 import { ExerciseResultComponent } from '../exercise-result/exercise-result';
-import { ProgressBarModule } from 'primeng/progressbar';
+import { ExerciseUnavailableComponent } from '../exercise-unavailable/exercise-unavailable';
+import { LetterHintComponent } from '../letter-hint/letter-hint';
+import { ProgressBarComponent } from '../../ui/progress-bar';
 import { FormsModule } from '@angular/forms';
-import { AutoFocusModule } from 'primeng/autofocus';
-import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
-import { finalize, take } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
+import { AutoFocusDirective } from '../../ui/auto-focus';
 
 class NextOptions {
   doNotKnow: boolean = false;
@@ -39,33 +41,24 @@ class NextOptions {
   }
 }
 
-class AnswerLetter {
-  Value = '';
-  Enabled = true;
-  UsedInCell: number | null = null; // index of the cell using this letter
-
-  constructor(value: string) {
-    this.Value = value;
-  }
-}
-
 @Component({
   selector: 'app-translations-word-exercise',
   imports: [
+    AutoFocusDirective,
     CommonModule,
     FormsModule,
     RoundprogressModule,
-    ImageModule,
-    ProgressBarModule,
-    AutoFocusModule,
-    InputTextModule,
-    ButtonModule,
-    RippleModule,
+    ImageComponent,
+    ProgressBarComponent,
     StarComponent,
+    HighlightWordPipe,
     SvgIconComponent,
     ExerciseResultComponent,
+    ExerciseUnavailableComponent,
+    LetterHintComponent,
   ],
   templateUrl: './translations-word-exercise.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./translations-word-exercise.scss'],
 })
 export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
@@ -76,22 +69,24 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
   formattedAnswer = '';
   showAnswer = false;
   isHelpMode = false;
-  helpModeAnswer: string[] = [];
-  helpModeAnswerLetters: AnswerLetter[] = [];
+  helpModeLetters: string[] = [];
+  helpModeAnswer = '';
   isCorrectAnswer = false;
   answersHistory: boolean[] = [];
   helpHistory: boolean[] = [];
   remainingTime: number = this.staticConfigService.timerValueInSeconds;
   isBusy = false;
+  isUnavailable = false;
   private timerSubscription: Subscription | null = null;
+  private isDestroyed = false;
 
   @ViewChild('submitButton') submitButtonRef?: ElementRef;
-  @ViewChildren('helpModeAnswerCell') helpModeAnswerCells?: QueryList<ElementRef>;
 
   constructor(
     public readonly staticConfigService: StaticConfigService,
     public readonly dynamicConfigService: DynamicConfigService,
     private readonly apiService: ApiService,
+    private readonly exerciseCompletionsService: ExerciseCompletionsService,
     private readonly userStatisticsService: UserStatisticsService,
     private readonly soundService: SoundService,
   ) {}
@@ -99,8 +94,7 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
   get isSubmitDisabled(): boolean {
     return (
       !this.showAnswer &&
-      ((!this.isHelpMode && !this.answer?.length) ||
-        (this.isHelpMode && this.helpModeAnswer.some((c) => !c.length)))
+      ((!this.isHelpMode && !this.answer?.length) || (this.isHelpMode && !this.helpModeAnswer))
     );
   }
 
@@ -109,6 +103,7 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.isDestroyed = true;
     this.unsubscribeTimer();
   }
 
@@ -117,18 +112,19 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
     if (this.showAnswer) {
       this.answer = '';
       this.isHelpMode = false;
-      this.helpModeAnswer = [];
-      this.helpModeAnswerLetters = [];
+      this.helpModeLetters = [];
+      this.helpModeAnswer = '';
       if (this.staticConfigService.enableTimer && this.questionIndex < this.tasks.length) {
-        this.timerSubscription = timer(0, 1000).subscribe(this.onTimer.bind(this));
+        this.startTimer();
       }
       if (this.questionIndex == this.tasks.length) {
-        this.exerciseWordStatistics.filter((ews) => !ews.isCorrectAnswer).length == 0
-          ? this.soundService.success()
+        this.exerciseCompletionsService.markCompleted(ExerciseTypeEnum.TranslationsWord);
+        this.exerciseWordStatistics.every((ews) => ews.isCorrectAnswer)
+          ? this.soundService.celebrate()
           : this.soundService.finish();
       }
     } else {
-      this.answer = this.isHelpMode ? this.helpModeAnswer.join('') : this.answer.trim();
+      this.answer = this.isHelpMode ? this.helpModeAnswer : this.answer.trim();
       if (options.doNotKnow) {
         this.answer = '';
       } else if (
@@ -159,6 +155,20 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
         newWordLearningProgress--;
       }
 
+      this.apiService
+        .putExerciseResults([
+          new ExerciseWordResult(task.wordId, this.isCorrectAnswer, this.isHelpMode),
+        ])
+        .pipe(take(1))
+        .subscribe({
+          next: () => {
+            this.userStatisticsService.refresh();
+          },
+          error: (error) => {
+            console.log(error);
+          },
+        });
+
       this.answersHistory.push(this.isCorrectAnswer);
       this.helpHistory.push(this.isHelpMode);
       this.exerciseWordStatistics.push(
@@ -184,23 +194,6 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
       this.questionIndex++;
     }
 
-    if (this.showAnswer && this.questionIndex == this.tasks.length) {
-      const result: ExerciseWordResult[] = [];
-      for (let i = 0; i < this.tasks.length; i++) {
-        result.push(
-          new ExerciseWordResult(this.tasks[i].wordId, this.answersHistory[i], this.helpHistory[i]),
-        );
-      }
-      this.apiService.putExerciseResults(result).subscribe({
-        next: () => {
-          this.userStatisticsService.refresh();
-        },
-        error: (error) => {
-          console.log(error);
-        },
-      });
-    }
-
     this.showAnswer = !this.showAnswer;
   }
 
@@ -211,164 +204,11 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
   onHelp() {
     this.isHelpMode = true;
     this.answer = '';
-    const word = this.tasks[this.questionIndex].word;
-    const letters = [...word];
-    this.helpModeAnswerLetters = [];
-    for (let i = letters.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [letters[i], letters[j]] = [letters[j], letters[i]];
-    }
-    letters.forEach((letter) => {
-      this.helpModeAnswerLetters.push(new AnswerLetter(letter));
-    });
-    this.helpModeAnswer = Array(word.length).fill('');
-    setTimeout(() => {
-      const firstCell = this.helpModeAnswerCells!.get(0);
-      firstCell?.nativeElement.focus();
-    });
-
+    this.helpModeAnswer = '';
+    this.helpModeLetters = [...this.tasks[this.questionIndex].word];
     this.soundService.help();
   }
 
-  onClickLetter(letter: AnswerLetter, targetIndex?: number) {
-    if (!letter.Enabled) {
-      return;
-    }
-
-    // Determine the target cell index
-    const index = targetIndex ?? this.helpModeAnswer.findIndex((v) => !v);
-    if (index === -1) {
-      return;
-    }
-
-    const cell = this.helpModeAnswerCells?.get(index);
-    if (!cell) {
-      return;
-    }
-
-    const currentValue = cell.nativeElement.value;
-
-    // If the cell already has a letter, restore it
-    if (currentValue) {
-      this.restoreLetter(currentValue, index);
-    }
-
-    // Insert new letter into target cell
-    this.helpModeAnswer[index] = letter.Value;
-    letter.Enabled = false;
-    letter.UsedInCell = index;
-
-    // Update the input value directly and set cursor to end
-    cell.nativeElement.value = letter.Value;
-    cell.nativeElement.setSelectionRange(
-      cell.nativeElement.value.length,
-      cell.nativeElement.value.length,
-    );
-
-    // Move focus to next cell only if cursor was at the end
-    if (cell.nativeElement.selectionStart === cell.nativeElement.value.length) {
-      const nextCell = this.helpModeAnswerCells?.get(index + 1);
-      nextCell?.nativeElement.focus();
-    }
-  }
-
-  onHelpModeAnswerKeyDown(event: KeyboardEvent, i: number) {
-    const key = event.key;
-    const input = event.target as HTMLInputElement;
-    const currentValue = input.value;
-    const cursorPos = input.selectionStart ?? 0;
-
-    if (key === 'ArrowLeft') {
-      event.preventDefault();
-      if (cursorPos > 0) {
-        input.setSelectionRange(cursorPos - 1, cursorPos - 1);
-      } else {
-        this.focusCell(i - 1, true);
-      }
-      return;
-    }
-
-    if (key === 'ArrowRight') {
-      event.preventDefault();
-      if (cursorPos < currentValue.length) {
-        input.setSelectionRange(cursorPos + 1, cursorPos + 1);
-      } else {
-        this.focusCell(i + 1, false);
-      }
-      return;
-    }
-
-    // Backspace: delete letter only if cursor is after it
-    if (key === 'Backspace') {
-      event.preventDefault();
-      if (cursorPos === 0) {
-        this.focusCell(i - 1, true);
-        return;
-      }
-      if (cursorPos > 0 && currentValue) {
-        this.restoreLetter(currentValue, i);
-        input.value = '';
-        this.helpModeAnswer[i] = '';
-        input.setSelectionRange(0, 0);
-      }
-      return;
-    }
-
-    // Delete: delete letter only if cursor is before it
-    if (key === 'Delete') {
-      event.preventDefault();
-      if (cursorPos === currentValue.length) {
-        this.focusCell(i + 1, false);
-        return;
-      }
-      if (cursorPos < currentValue.length && currentValue) {
-        this.restoreLetter(currentValue, i);
-        input.value = '';
-        this.helpModeAnswer[i] = '';
-        input.setSelectionRange(0, 0);
-      }
-      return;
-    }
-
-    if (key.length !== 1) {
-      return;
-    }
-
-    const letter = this.getEnabledLetter(key);
-    if (!letter) {
-      event.preventDefault();
-      return;
-    }
-
-    // Valid letter input
-    event.preventDefault();
-
-    // If cell already has a letter, restore the letter that was used in this cell
-    if (currentValue) {
-      this.restoreLetter(currentValue, i);
-    }
-
-    // Insert new letter in current cell
-    input.value = key;
-    this.helpModeAnswer[i] = key;
-    letter.Enabled = false;
-    letter.UsedInCell = i;
-
-    // Set cursor to end of input
-    input.setSelectionRange(input.value.length, input.value.length);
-
-    // Move focus to next cell only if cursor was at the end
-    if (cursorPos === currentValue.length) {
-      this.focusCell(i + 1);
-    }
-  }
-
-  getHelpModeInputCharacter(event: any): string {
-    // если event это строка, возвращаем её, иначе берём target.value
-    return typeof event === 'string' ? event : (event?.target?.value ?? '');
-  }
-
-  // TODO: Check copy&paste.
   onPlayWordPronunciation(wordId: number) {
     const wordPronunciationAudio = new Audio();
     wordPronunciationAudio.src = this.apiService.getWordPronunciationUrl(wordId);
@@ -382,6 +222,7 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
     this.answersHistory = [];
     this.helpHistory = [];
     this.tasks = [];
+    this.isUnavailable = false;
     this.isBusy = true;
     this.apiService
       .getTranslationsWordExercise()
@@ -392,8 +233,9 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.tasks = data;
-          if (this.staticConfigService.enableTimer) {
-            this.timerSubscription = timer(0, 1000).subscribe(this.onTimer.bind(this));
+          this.isUnavailable = !data.length;
+          if (this.staticConfigService.enableTimer && !this.isUnavailable) {
+            this.startTimer();
           }
         },
         error: (error) => {
@@ -415,8 +257,17 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
     }
   }
 
+  private startTimer() {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    this.timerSubscription = timer(0, 1000).subscribe(this.onTimer.bind(this));
+  }
+
   private unsubscribeTimer() {
     if (this.timerSubscription) {
+      this.soundService.clockTickingReset();
       this.timerSubscription.unsubscribe();
       this.timerSubscription = null;
     }
@@ -424,42 +275,5 @@ export class TranslationsWordExerciseComponent implements OnInit, OnDestroy {
 
   onRepeat() {
     this.startExercise();
-  }
-
-  private getEnabledLetter(char: string): AnswerLetter | null {
-    return (
-      this.helpModeAnswerLetters.find(
-        (l) => l.Enabled && l.Value.toLowerCase() === char.toLowerCase(),
-      ) ?? null
-    );
-  }
-
-  private restoreLetter(letterValue: string, cellIndex: number) {
-    // Find the letter that was actually used in this cell
-    const letter = this.helpModeAnswerLetters.find(
-      (l) => l.Value === letterValue && l.UsedInCell === cellIndex,
-    );
-    if (!letter) {
-      return;
-    }
-
-    letter.Enabled = true;
-    letter.UsedInCell = null;
-  }
-
-  private focusCell(index: number, moveToEnd: boolean = false) {
-    const cell = this.helpModeAnswerCells?.get(index);
-    if (!cell) {
-      return;
-    }
-
-    cell.nativeElement.focus();
-    const len = cell.nativeElement.value.length;
-    const pos = moveToEnd ? len : 0;
-    cell.nativeElement.setSelectionRange(pos, pos);
-  }
-
-  trackByIndex(index: number): number {
-    return index;
   }
 }

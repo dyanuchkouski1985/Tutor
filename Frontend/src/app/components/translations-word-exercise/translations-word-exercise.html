@@ -1,4 +1,9 @@
-<div class="desk">
+<app-exercise-unavailable
+  *ngIf="isUnavailable"
+  message="You need at least 6 words in learning for this exercise. Add more words first."
+></app-exercise-unavailable>
+
+<div class="desk" *ngIf="!isUnavailable">
   <div class="timer">
     <round-progress
       *ngIf="staticConfigService.enableTimer && !showAnswer && questionIndex < tasks.length"
@@ -25,12 +30,10 @@
       {{ remainingTime }}
     </div>
   </div>
-  <div class="progressbar-container">
-    <p-progressBar [value]="(100 * questionIndex) / tasks.length">
-      <ng-template pTemplate="content" let-value>
-        <span>{{ questionIndex }}/{{ tasks.length }}</span>
-      </ng-template>
-    </p-progressBar>
+  <div class="progressbar-container" *ngIf="tasks.length">
+    <app-progress-bar [value]="(100 * questionIndex) / tasks.length"
+      ><span>{{ questionIndex }}/{{ tasks.length }}</span></app-progress-bar
+    >
     <div class="answers-history">
       <span *ngFor="let isCorrectAnswer of answersHistory; let i = index">
         <svg-icon
@@ -45,7 +48,7 @@
           [class.completed]="isCorrectAnswer"
           [ngClass]="{
             completed: isCorrectAnswer,
-            hidden: !helpHistory[i]
+            hidden: !helpHistory[i],
           }"
         ></svg-icon>
       </span>
@@ -54,64 +57,35 @@
   <form (ngSubmit)="onNext()">
     <div *ngIf="questionIndex < tasks.length || showAnswer">
       <div *ngIf="questionIndex < tasks.length && !showAnswer">
-        <p-image
+        <app-image
           *ngFor="let pictureId of tasks[questionIndex].pictureIds"
           [src]="staticConfigService.pictureUrl(pictureId)"
-          [preview]="true"
-        >
-          <ng-template #indicator>
-            <svg-icon src="../../../assets/images/svg/search.svg" class="search-icon"></svg-icon>
-          </ng-template>
-        </p-image>
+          preview
+        ></app-image>
         <div class="word-container">
           <app-star [wordLearningProgress]="tasks[questionIndex].wordLearningProgress"></app-star>
           <div [innerHTML]="tasks[questionIndex].translations.join('; ')" class="task"></div>
         </div>
         <input
           type="text"
-          pInputText
-          [pAutoFocus]="true"
+          appAutoFocus
           *ngIf="!isHelpMode"
-          class="answer-input"
+          class="ui-input answer-input"
           [(ngModel)]="answer"
           name="answer"
         />
-        <div *ngIf="isHelpMode" class="help-mode-container">
-          <div class="help-mode-answer-container">
-            <input
-              #helpModeAnswerCell
-              type="text"
-              pInputText
-              *ngFor="let letter of helpModeAnswer; index as i; trackBy: trackByIndex"
-              maxlength="1"
-              (keydown)="onHelpModeAnswerKeyDown($event, i)"
-            />
-          </div>
-          <div class="help-mode-letters-container">
-            <span
-              *ngFor="let letter of helpModeAnswerLetters"
-              [ngClass]="{
-                disabled: !letter.Enabled,
-                pointer: letter.Enabled,
-              }"
-              class="letter-box"
-              (click)="onClickLetter(letter)"
-            >
-              {{ letter.Value === ' ' ? '\u00A0' : letter.Value }}
-            </span>
-          </div>
-        </div>
+        <app-letter-hint
+          *ngIf="isHelpMode"
+          [letters]="helpModeLetters"
+          (answerChange)="helpModeAnswer = $event"
+        ></app-letter-hint>
       </div>
       <div class="answer" *ngIf="showAnswer">
-        <p-image
+        <app-image
           *ngFor="let pictureId of tasks[questionIndex - 1].pictureIds"
           [src]="staticConfigService.pictureUrl(pictureId)"
-          [preview]="true"
-        >
-          <ng-template #indicator>
-            <svg-icon src="../../../assets/images/svg/search.svg" class="search-icon"></svg-icon>
-          </ng-template>
-        </p-image>
+          preview
+        ></app-image>
         <div class="correct-answer">
           <div class="word-container">
             <app-star
@@ -144,25 +118,7 @@
             <li
               *ngFor="let usage of tasks[questionIndex - 1].usages"
               class="usage-text"
-              [innerHTML]="
-                usage
-                  .replaceAll(
-                    tasks[questionIndex - 1].word[0].toUpperCase() +
-                      tasks[questionIndex - 1].word.slice(1, tasks[questionIndex - 1].word.length),
-                    '<i>' +
-                      tasks[questionIndex - 1].word[0].toUpperCase() +
-                      tasks[questionIndex - 1].word.slice(1, tasks[questionIndex - 1].word.length) +
-                      '</i>'
-                  )
-                  .replaceAll(
-                    ' ' + tasks[questionIndex - 1].word + ' ',
-                    ' <i>' + tasks[questionIndex - 1].word + '</i> '
-                  )
-                  .replaceAll(
-                    ' ' + tasks[questionIndex - 1].word,
-                    ' <i>' + tasks[questionIndex - 1].word + '</i>'
-                  )
-              "
+              [innerHTML]="usage | highlightWord: tasks[questionIndex - 1].word"
             ></li>
           </ul>
         </div>
@@ -170,15 +126,13 @@
       <div class="buttons-container">
         <button
           type="submit"
-          pButton
-          pRipple
-          class="p-button-success"
+          class="ui-button ui-button-success"
           #submitButton
           [disabled]="isSubmitDisabled"
         >
           {{ showAnswer ? 'Next' : 'Answer' }}
         </button>
-        <button type="button" pButton pRipple *ngIf="!showAnswer" (click)="onDoNotKnow()">
+        <button type="button" class="ui-button" *ngIf="!showAnswer" (click)="onDoNotKnow()">
           Don't know
         </button>
         <svg-icon
@@ -193,6 +147,7 @@
   <div *ngIf="tasks.length != 0 && questionIndex == tasks.length && !showAnswer">
     <app-exercise-result
       [exerciseWordStatistics]="exerciseWordStatistics"
+      availabilityFlag="isAvailableTranslationsWordExercise"
       (repeatExerciseEvent)="onRepeat()"
     ></app-exercise-result>
   </div>

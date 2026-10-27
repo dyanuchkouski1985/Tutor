@@ -7,7 +7,7 @@ public class WordConfiguration : IEntityTypeConfiguration<Word>
 {
     public void Configure(EntityTypeBuilder<Word> builder)
     {
-        builder.Property(entity => entity.Value).IsRequired().HasMaxLength(50);
+        builder.Property(entity => entity.Value).IsRequired();
         builder.Property(entity => entity.PronunciationData).IsRequired(false);
         builder.Property(entity => entity.PronunciationContentType).IsRequired(false);
         builder.Property(entity => entity.PronunciationExtension).IsRequired(false);

@@ -1,3 +1,21 @@
+@use 'app/ui/theme/tokens';
+@use '@angular/cdk' as cdk;
+@use 'app/ui/button';
+@use 'app/ui/input';
+@use 'app/ui/toggle';
+@use 'app/ui/select-button';
+@use 'app/ui/progress-bar';
+@use 'app/ui/tooltip';
+@use 'app/ui/popover';
+@use 'app/ui/dialog';
+@use 'app/ui/toast';
+@use 'app/ui/image';
+@use 'app/ui/file-drop';
+@use 'app/ui/autocomplete';
+@use 'app/ui/pick-list';
+
+@include cdk.overlay();
+
 html {
   height: 100%;
   width: 100%;
@@ -7,40 +25,24 @@ body {
   margin: 10px 10px 0 10px;
   height: calc(100% - 10px);
   width: calc(100% - 20px);
-  min-width: 1500px;
-  background-color: var(--p-surface-950);
+  min-width: 1240px;
+  background-color: var(--ui-page-background);
 
-  &:has(.p-listbox-option.cdk-drag-dragging) {
+  &:has(.ui-picklist-option.cdk-drag-dragging) {
     cursor: grabbing !important;
   }
 }
 
 body,
 input,
-.p-component {
+textarea,
+button {
   font-family: cursive, 'Helvetica Neue', sans-serif !important;
 }
 
-input {
+input:not([type='checkbox']) {
   border-start-start-radius: 0 !important;
   border-end-start-radius: 0 !important;
-}
-
-#image-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: black;
-  z-index: 999;
-  pointer-events: none;
-  opacity: 0;
-}
-
-#image-backdrop.active {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 /* COLORS AND VARIABLES */
@@ -49,6 +51,7 @@ input {
   --font-size-xx-large: xx-large;
   --font-size-x-large: x-large;
   --font-size-medium: medium;
+  --font-size-small: small;
 
   --svg-width-large: 50px;
   --svg-height-large: 50px;
@@ -57,223 +60,207 @@ input {
   --svg-width-small: 25px;
   --svg-height-small: 25px;
 
-  --color-error: var(--p-red-600);
-  --color-green: var(--p-green-600);
-  --color-font-icons: var(--p-primary-color);
-  --color-secondary-highlight: var(--p-yellow-400);
-  --color-primary-heavy: var(--p-primary-800);
-  --color-primary: var(--p-text-color);
-  --color-primary-highlight: var(--p-primary-500);
-  --color-primary-light: var(--p-primary-700);
-  --color-primary-heavy-dark: var(--p-primary-900);
-}
+  --word-card-estimated-height: 150px;
 
-/* PRIMENG VARIABLES.*/
-/* PrimeNG customization */
-.p-disabled,
-.p-component:disabled {
-  opacity: 0.4;
-}
+  --ui-surface-0: var(--theme-surface-0);
+  --ui-surface-800: var(--theme-surface-800);
+  --ui-surface-900: var(--theme-surface-900);
+  --ui-surface-950: var(--theme-surface-950);
+  --ui-page-background: var(--theme-surface-50);
+  color-scheme: light;
+  --ui-text-color: var(--theme-text-color);
+  --ui-border-color: var(--theme-content-border-color);
+  --ui-input-border-color: var(--theme-form-field-border-color);
+  --ui-mask-color: var(--theme-mask-color);
+  --ui-image-action-color: var(--theme-surface-50);
+  --ui-image-action-hover-color: var(--theme-surface-0);
+  --ui-file-drop-background: var(--theme-content-background);
+  --ui-file-drop-color: var(--theme-content-color);
+  --ui-select-background: var(--theme-overlay-select-background);
+  --ui-select-border-color: var(--theme-overlay-select-border-color);
+  --ui-select-radius: var(--theme-overlay-select-border-radius);
+  --ui-select-color: var(--theme-overlay-select-color);
+  --ui-select-shadow: var(--theme-overlay-select-shadow);
+  --ui-option-color: var(--theme-list-option-color);
+  --ui-option-focus-background: var(--theme-list-option-focus-background);
+  --ui-option-focus-color: var(--theme-list-option-focus-color);
+  --ui-primary-color: var(--theme-primary-color);
+  --ui-primary-500: var(--theme-primary-500);
+  --ui-primary-700: var(--theme-primary-700);
+  --ui-primary-800: var(--theme-primary-800);
+  --ui-primary-900: var(--theme-primary-900);
+  --ui-on-primary: var(--theme-primary-contrast-color);
+  --ui-red-600: var(--theme-red-600);
+  --ui-green-500: var(--theme-green-500);
+  --ui-green-600: var(--theme-green-600);
+  --ui-green-700: var(--theme-green-700);
+  --ui-yellow-400: var(--theme-yellow-400);
+  --ui-amber-400: var(--theme-amber-400);
+  --ui-orange-600: var(--theme-orange-600);
+  --ui-sky-500: var(--theme-sky-500);
+  --ui-purple-400: var(--theme-purple-400);
+  --ui-radius-field: var(--theme-form-field-border-radius);
+  --ui-radius-overlay: var(--theme-overlay-modal-border-radius);
 
-.p-floatlabel {
-  width: auto !important;
+  --ui-field-padding-x: var(--theme-form-field-padding-x);
+  --ui-field-padding-y: var(--theme-form-field-padding-y);
+  --ui-field-radius: var(--theme-form-field-border-radius);
+  --ui-transition-duration: var(--theme-form-field-transition-duration);
+  --ui-focus-ring-width: var(--theme-focus-ring-width);
+  --ui-focus-ring-style: var(--theme-focus-ring-style);
+  --ui-focus-ring-offset: var(--theme-focus-ring-offset);
+  --ui-focus-ring-color: var(--theme-focus-ring-color);
+  --ui-focus-ring-shadow: var(--theme-focus-ring-shadow);
+  --ui-radius-sm: var(--theme-border-radius-sm);
+  --ui-primary-hover-color: var(--theme-primary-hover-color);
+  --ui-radius-content: var(--theme-content-border-radius);
+  --ui-field-sm-font-size: var(--theme-form-field-sm-font-size);
+  --ui-field-background: var(--theme-form-field-background);
+  --ui-field-color: var(--theme-form-field-color);
+  --ui-field-shadow: var(--theme-form-field-shadow);
+  --ui-field-hover-border-color: var(--theme-form-field-hover-border-color);
+  --ui-field-focus-border-color: var(--theme-form-field-focus-border-color);
+  --ui-field-invalid-border-color: var(--theme-form-field-invalid-border-color);
+  --ui-field-disabled-background: var(--theme-form-field-disabled-background);
+  --ui-field-disabled-color: var(--theme-form-field-disabled-color);
+  --ui-field-placeholder-color: var(--theme-form-field-placeholder-color);
+  --ui-field-focus-ring-width: var(--theme-form-field-focus-ring-width);
+  --ui-field-focus-ring-style: var(--theme-form-field-focus-ring-style);
+  --ui-field-focus-ring-color: var(--theme-form-field-focus-ring-color);
+  --ui-field-focus-ring-offset: var(--theme-form-field-focus-ring-offset);
+  --ui-field-focus-ring-shadow: var(--theme-form-field-focus-ring-shadow);
+  --ui-float-label-color: var(--theme-form-field-float-label-color);
+  --ui-float-label-focus-color: var(--theme-form-field-float-label-focus-color);
+  --ui-float-label-active-color: var(--theme-form-field-float-label-active-color);
+  --ui-float-label-invalid-color: var(--theme-form-field-float-label-invalid-color);
 
-  label {
-    font-size: initial;
+  --ui-button-background: var(--theme-primary-color);
+  --ui-button-hover-background: var(--theme-primary-hover-color);
+  --ui-button-active-background: var(--theme-primary-active-color);
+  --ui-button-color: var(--theme-primary-contrast-color);
+  --ui-button-success-background: var(--theme-green-500);
+  --ui-button-success-hover-background: var(--theme-green-600);
+  --ui-button-success-active-background: var(--theme-green-700);
+  --ui-button-success-color: #ffffff;
+  --ui-button-outlined-border-color: var(--theme-primary-200);
+  --ui-button-outlined-hover-background: var(--theme-primary-50);
+  --ui-button-outlined-active-background: var(--theme-primary-100);
+  --ui-toggle-background: var(--theme-surface-300);
+  --ui-toggle-hover-background: var(--theme-surface-400);
+  --ui-toggle-handle: var(--theme-surface-0);
+  --ui-toggle-handle-hover: var(--theme-surface-0);
+  --ui-toggle-handle-checked: var(--theme-surface-0);
+  --ui-togglebutton-background: var(--theme-surface-100);
+  --ui-togglebutton-color: var(--theme-surface-500);
+  --ui-togglebutton-hover-color: var(--theme-surface-700);
+  --ui-togglebutton-checked-color: var(--theme-surface-900);
+  --ui-togglebutton-checked-content-background: var(--theme-surface-0);
+  --ui-tooltip-background: var(--theme-surface-700);
+  --ui-tooltip-color: var(--theme-surface-0);
+  --ui-tooltip-shadow: var(--theme-overlay-popover-shadow);
+  --ui-tooltip-radius: var(--theme-overlay-popover-border-radius);
+  --ui-popover-background: var(--theme-overlay-popover-background);
+  --ui-popover-border-color: var(--theme-overlay-popover-border-color);
+  --ui-popover-color: var(--theme-overlay-popover-color);
+  --ui-popover-radius: var(--theme-overlay-popover-border-radius);
+  --ui-popover-shadow: var(--theme-overlay-popover-shadow);
+  --ui-popover-padding: var(--theme-overlay-popover-padding);
+  --ui-mask-background: var(--theme-mask-background);
+  --ui-dialog-background: var(--theme-overlay-modal-background);
+  --ui-dialog-border-color: var(--theme-overlay-modal-border-color);
+  --ui-dialog-color: var(--theme-overlay-modal-color);
+  --ui-dialog-shadow: var(--theme-overlay-modal-shadow);
+  --ui-dialog-padding: var(--theme-overlay-modal-padding);
+  --ui-dialog-close-color: var(--theme-surface-500);
+  --ui-dialog-close-hover-background: var(--theme-surface-100);
+  --ui-toast-detail-color: var(--theme-surface-700);
+  --ui-toast-success-background: color-mix(in srgb, var(--theme-green-50), transparent 5%);
+  --ui-toast-success-border-color: var(--theme-green-200);
+  --ui-toast-success-color: var(--theme-green-600);
+  --ui-toast-success-shadow-color: color-mix(in srgb, var(--theme-green-500), transparent 96%);
+  --ui-toast-success-close-hover-background: var(--theme-green-100);
+  --ui-toast-error-background: color-mix(in srgb, var(--theme-red-50), transparent 5%);
+  --ui-toast-error-border-color: var(--theme-red-200);
+  --ui-toast-error-color: var(--theme-red-600);
+  --ui-toast-error-shadow-color: color-mix(in srgb, var(--theme-red-500), transparent 96%);
+  --ui-toast-error-close-hover-background: var(--theme-red-100);
+
+  &.theme-dark {
+    color-scheme: dark;
+    --ui-page-background: var(--theme-surface-950);
+    --ui-toggle-background: var(--theme-surface-700);
+    --ui-toggle-hover-background: var(--theme-surface-600);
+    --ui-toggle-handle: var(--theme-surface-400);
+    --ui-toggle-handle-hover: var(--theme-surface-300);
+    --ui-toggle-handle-checked: var(--theme-surface-900);
+    --ui-togglebutton-background: var(--theme-surface-950);
+    --ui-togglebutton-color: var(--theme-surface-400);
+    --ui-togglebutton-hover-color: var(--theme-surface-300);
+    --ui-togglebutton-checked-color: var(--theme-surface-0);
+    --ui-togglebutton-checked-content-background: var(--theme-surface-800);
+    --ui-dialog-close-color: var(--theme-surface-400);
+    --ui-dialog-close-hover-background: var(--theme-surface-800);
+    --ui-toast-detail-color: var(--theme-surface-0);
+    --ui-toast-success-background: color-mix(in srgb, var(--theme-green-500), transparent 84%);
+    --ui-toast-success-border-color: color-mix(in srgb, var(--theme-green-700), transparent 64%);
+    --ui-toast-success-color: var(--theme-green-500);
+    --ui-toast-success-close-hover-background: rgba(255, 255, 255, 0.05);
+    --ui-toast-error-background: color-mix(in srgb, var(--theme-red-500), transparent 84%);
+    --ui-toast-error-border-color: color-mix(in srgb, var(--theme-red-700), transparent 64%);
+    --ui-toast-error-color: var(--theme-red-500);
+    --ui-toast-error-close-hover-background: rgba(255, 255, 255, 0.05);
+    --ui-button-success-background: var(--theme-green-400);
+    --ui-button-success-hover-background: var(--theme-green-300);
+    --ui-button-success-active-background: var(--theme-green-200);
+    --ui-button-success-color: var(--theme-green-950);
+    --ui-button-outlined-border-color: var(--theme-primary-700);
+    --ui-button-outlined-hover-background: color-mix(
+      in srgb,
+      var(--theme-primary-color),
+      transparent 96%
+    );
+    --ui-button-outlined-active-background: color-mix(
+      in srgb,
+      var(--theme-primary-color),
+      transparent 84%
+    );
+  }
+
+  --color-error: var(--ui-red-600);
+  --color-green: var(--ui-green-600);
+  --color-font-icons: var(--ui-primary-color);
+  --color-secondary-highlight: var(--ui-yellow-400);
+  --color-primary-heavy: var(--ui-primary-800);
+  --color-primary: var(--ui-text-color);
+  --color-primary-highlight: var(--ui-primary-500);
+  --color-primary-light: var(--ui-primary-700);
+  --color-primary-heavy-dark: var(--ui-primary-900);
+
+  $message-hues:
+    blue, purple, orange, teal, pink, lime, indigo, amber, cyan, rose, green, violet, yellow, sky,
+    fuchsia, emerald, red, slate, stone, zinc;
+
+  $index: 0;
+
+  @each $hue in $message-hues {
+    --color-message-#{$index}: var(--theme-#{$hue}-900);
+    --color-message-#{$index}-accent: var(--theme-#{$hue}-400);
+    $index: $index + 1;
   }
 }
 
-.p-popover-content input {
-  padding: 5px;
-}
-
-.p-fileupload {
-  .p-fileupload-header {
-    display: none;
+app-image {
+  img {
+    height: 200px;
+    margin: 0 20px;
   }
 
-  .p-fileupload-content {
-    width: 200px;
-    text-align: center;
-    border-color: var(--color-font-icons);
-    padding: 32px 16px;
-
-    p-progressbar,
-    .p-fileupload-files,
-    p-messages {
-      display: none;
-    }
-  }
-}
-
-p-image {
-  &:not(:has(.p-overlay-mask)) {
-    img {
-      height: 200px;
-      margin: 0 20px;
-    }
-  }
-
-  &.word-translation-dialog-image {
-    &:not(:has(.p-overlay-mask)) {
-      img {
-        max-width: 100px;
-        min-height: 0;
-        max-height: 100px;
-        object-fit: contain;
-        margin: 0;
-      }
-    }
-
-    .p-overlay-mask {
-      border-radius: var(--p-dialog-border-radius);
-
-      .p-motion {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        .p-image-original {
-          max-width: 98%;
-          max-height: 98%;
-          object-fit: contain;
-        }
-      }
-    }
-  }
-
-  .p-image-mask {
-    --maskbg: rgba(0, 0, 0, 1) !important;
-    background-color: black !important;
-  }
-}
-
-.p-image-toolbar {
-  button {
-    display: none;
-  }
-
-  button:last-of-type {
-    display: flex;
-  }
-}
-
-p-table {
-  font-size: var(--font-size-xx-large);
-
-  thead > tr {
-    th {
-      white-space: nowrap;
-
-      &.p-datatable-column-sorted {
-        --p-datatable-header-cell-selected-background: var(--p-primary-900);
-      }
-    }
-  }
-
-  .p-datatable-table-container {
-    height: 100%;
-
-    .p-virtualscroller {
-      height: 100% !important;
-
-      &:has(p-image .p-image-mask) {
-        contain: none;
-        transform: none;
-
-        tbody {
-          will-change: auto;
-          transform: none !important;
-        }
-      }
-    }
-
-    .p-datatable-tbody > tr {
-      td {
-        padding: 5px;
-
-        &.col-word {
-          white-space: nowrap;
-        }
-
-        &.col-picture {
-          display: flex;
-          align-items: center;
-          height: calc(100px + 1px);
-          min-height: calc(100px + 1px);
-          box-sizing: border-box;
-
-          .p-image {
-            display: flex;
-
-            > img {
-              max-height: 79px !important;
-              max-width: 79px !important;
-              display: block;
-            }
-          }
-        }
-
-        &.col-usages .usages-container,
-        &.col-translations .translations-container {
-          height: calc(100px - 2 * 5px);
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-evenly;
-
-          .translation {
-            display: block;
-            line-height: 1.1;
-            white-space: normal;
-            word-break: break-word;
-            font-size: 20px;
-          }
-
-          .translation {
-            font-size: var(--font-size-x-large);
-          }
-        }
-
-        &.col-adding-date,
-        &.col-learning-date {
-          font-size: 18px;
-        }
-      }
-    }
-  }
-
-  svg-icon {
-    margin: 0 5px;
-  }
-
-  p-image img {
-    display: inline-block;
-    min-height: 0;
-    height: auto !important;
-    max-height: 100px;
+  &.word-translation-dialog-image img {
     max-width: 100px;
-  }
-
-  p-skeleton {
-    width: 100% !important;
-  }
-}
-
-p-picklist {
-  .p-picklist-controls.p-picklist-transfer-controls {
-    display: none;
-  }
-
-  .p-listbox-option:hover {
-    cursor: grab;
-
-    svg-icon {
-      cursor: pointer;
-    }
+    min-height: 0;
+    max-height: 100px;
+    object-fit: contain;
+    margin: 0;
   }
 }
 
@@ -361,12 +348,6 @@ p-picklist {
   border-radius: 5px;
 }
 
-.p-dialog-content {
-  background-clip: padding-box;
-  overflow: hidden;
-  border-radius: 5px;
-}
-
 ::-webkit-scrollbar-thumb {
   background: var(--color-primary-light);
   border-radius: 5px;
@@ -376,15 +357,41 @@ p-picklist {
   }
 }
 
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+textarea::-webkit-resizer {
+  background: linear-gradient(
+      135deg,
+      transparent 0 45%,
+      var(--ui-float-label-color) 45% 55%,
+      transparent 55% 70%,
+      var(--ui-float-label-color) 70% 80%,
+      transparent 80%
+    )
+    right 2px bottom 2px / 7px 7px no-repeat;
+}
+
 .word-translations-dialog {
   width: 1000px;
+  max-width: calc(100vw - 32px);
   min-height: 600px;
 
-  input {
+  input:not([type='checkbox']) {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     font-size: var(--font-size-xx-large);
   }
+}
+
+.conversation-dialog {
+  width: 700px;
+}
+
+.activity-calendar-dialog {
+  width: 600px;
+  max-width: calc(100vw - 32px);
 }
 
 .root {
@@ -396,10 +403,6 @@ p-picklist {
 }
 
 // PrimeNG
-.p-autocomplete-overlay.p-component:has(.p-autocomplete-empty-message) {
-  visibility: hidden;
-}
-
 .progress-spinner,
 .progress-spinner:before {
   transition: background-color 2s ease-in-out;
@@ -462,13 +465,13 @@ round-progress {
       stroke: var(--color-primary-highlight) !important;
     }
 
-    + span {
+    ~ span {
       color: var(--color-primary-highlight);
     }
   }
 
   &.exercise-timer {
-    position: fixed;
+    position: absolute;
     top: 15px;
     right: 10px;
 
@@ -652,6 +655,24 @@ round-progress {
   cursor: pointer;
 }
 
+.sort-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0 16px;
+
+  .sort-button {
+    font-size: var(--font-size-medium);
+    gap: 6px;
+
+    &.active {
+      box-shadow: inset 0 0 0 2px var(--color-font-icons);
+      font-weight: bold;
+    }
+  }
+}
+
 /* SVG ICONS */
 svg-icon {
   svg,
@@ -676,6 +697,10 @@ svg-icon {
     fill: var(--color-font-icons) !important;
   }
 
+  &.button-primary-color g path {
+    fill: var(--ui-on-primary) !important;
+  }
+
   &.svg-animation-grow svg {
     animation: grow 1s;
   }
@@ -688,12 +713,12 @@ svg-icon {
       height: 30px;
 
       g path {
-        fill: var(--p-image-preview-mask-color) !important;
+        fill: var(--ui-mask-color) !important;
       }
     }
 
     &.button-primary-color g path {
-      fill: var(--p-button-primary-color) !important;
+      fill: var(--ui-on-primary) !important;
     }
   }
 
@@ -705,13 +730,8 @@ svg-icon {
       height: 25px;
 
       g path {
-        fill: var(--p-button-primary-color) !important;
+        fill: var(--ui-on-primary) !important;
       }
-    }
-
-    &.checkbox svg {
-      width: 20px;
-      height: 20px;
     }
   }
 
@@ -744,8 +764,9 @@ svg-icon {
   }
 
   &.reminder-icon svg {
-    g path {
-      fill: var(--color-error) !important;
+    path,
+    polyline,
+    line {
       stroke: var(--color-error) !important;
     }
   }
@@ -761,15 +782,15 @@ svg-icon {
   &.edit-icon svg {
     g:nth-of-type(1) {
       path {
-        fill: var(--color-primary-heavy-dark) !important;
-        stroke: var(--color-primary-heavy-dark) !important;
+        fill: var(--color-font-icons) !important;
+        stroke: var(--color-font-icons) !important;
       }
     }
 
     g:nth-of-type(2) {
       path {
-        fill: var(--color-primary-highlight) !important;
-        stroke: var(--color-primary-highlight) !important;
+        fill: var(--color-primary-light) !important;
+        stroke: var(--color-primary-light) !important;
       }
     }
   }
@@ -795,6 +816,7 @@ app-root {
   height: 100%;
   width: 100%;
   display: inline-block;
+  vertical-align: top;
 
   &:has(app-test) {
     .user-statistics {
@@ -807,10 +829,31 @@ app-root {
     width: 100%;
     display: block;
   }
+
+  &:has(app-conversation-runner) {
+    display: flex;
+    flex-direction: column;
+
+    app-conversation-runner {
+      flex: 1;
+      min-height: 0;
+    }
+  }
 }
 
 app-translations-word-exercise,
 app-crossword-exercise,
+app-speech-exercise,
+app-mistakes,
+app-mistakes-exercise,
+app-sentence-translation-exercise,
+app-guess-exercise,
+app-explain-exercise,
+app-listening-exercise,
+app-countability-exercise,
+app-articles-exercise,
+app-verb-forms-exercise,
+app-tomorrow-words,
 app-test {
   display: block;
   clear: left;
@@ -897,7 +940,7 @@ app-test {
 
   .timer-seconds {
     font-size: xx-large;
-    position: fixed;
+    position: absolute;
     top: 41px;
     right: 37px;
     width: 50px;

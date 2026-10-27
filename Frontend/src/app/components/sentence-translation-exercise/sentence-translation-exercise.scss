@@ -1,0 +1,240 @@
+.selected-text-icon {
+  position: fixed;
+  z-index: 1100;
+  transform: translate(-50%, -115%);
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--ui-surface-800);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 45%);
+}
+
+.exercise-result {
+  color: var(--color-primary);
+  font-size: var(--font-size-x-large);
+  padding: 20px 20px 40px;
+
+  .home {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    cursor: pointer;
+
+    ::ng-deep svg {
+      height: 48px;
+      width: 48px;
+    }
+  }
+
+  .summary {
+    font-size: var(--font-size-xx-large);
+    text-align: center;
+    margin: 20px 0;
+
+    .summary-correct,
+    .summary-points {
+      color: var(--color-green);
+    }
+
+    .summary-points {
+      margin-left: 15px;
+    }
+  }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .card {
+    padding: 14px 18px;
+    border: 1px solid var(--ui-border-color);
+    border-left: 5px solid var(--ui-border-color);
+    border-radius: 8px;
+
+    &.correct {
+      border-left-color: var(--color-green);
+    }
+
+    &.wrong {
+      border-left-color: var(--color-error);
+
+      .card-answer {
+        color: var(--color-error);
+        text-decoration: line-through;
+      }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-sentence {
+      color: var(--color-primary-highlight);
+    }
+
+    .card-points {
+      color: var(--color-green);
+      white-space: nowrap;
+
+      &.zero {
+        color: var(--color-error);
+      }
+    }
+
+    .card-answer {
+      font-size: var(--font-size-medium);
+      margin-top: 6px;
+    }
+
+    .card-translation {
+      color: var(--color-green);
+      margin-top: 4px;
+    }
+  }
+
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+
+    button {
+      font-size: var(--font-size-xx-large);
+
+      &.back {
+        background: var(--color-error) !important;
+        border-color: var(--color-error) !important;
+      }
+    }
+  }
+}
+
+.sentence-translation-exercise {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+
+  .error {
+    color: var(--color-error);
+    font-size: var(--font-size-medium);
+  }
+
+  .progressbar-container {
+    align-self: stretch;
+  }
+
+  .sentence {
+    color: var(--color-primary);
+    font-size: var(--font-size-x-large);
+    text-align: center;
+
+    .hint {
+      cursor: pointer;
+      text-decoration: underline dotted;
+      text-underline-offset: 6px;
+
+      rt {
+        color: var(--color-green);
+        font-size: var(--font-size-medium);
+      }
+    }
+  }
+
+  .result {
+    color: var(--color-primary);
+    font-size: var(--font-size-x-large);
+    text-align: center;
+
+    .verdict {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+
+      img {
+        animation: gelatine 1s;
+        min-width: 50px;
+        width: 50px;
+
+        &.dislike {
+          position: relative;
+          top: 10px;
+        }
+      }
+
+      .points {
+        color: var(--color-green);
+
+        &.zero {
+          color: var(--color-error);
+        }
+      }
+    }
+
+    .natural-translation {
+      font-size: var(--font-size-xx-large);
+      color: var(--color-green);
+      margin: 5px 0;
+    }
+
+    .explanation {
+      font-size: var(--font-size-medium);
+      margin-top: 8px;
+    }
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    button {
+      margin-left: 10px;
+      margin-right: 10px;
+      font-size: 36px;
+    }
+
+    .dont-know-button {
+      background-color: var(--color-error) !important;
+      border-color: var(--color-error) !important;
+    }
+
+    .help-icon {
+      display: flex;
+      align-items: center;
+
+      &.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      ::ng-deep svg {
+        width: 68px;
+        height: 68px;
+      }
+    }
+  }
+
+  .answer-textarea {
+    width: 100%;
+    max-width: 900px;
+    font-size: var(--font-size-xx-large);
+    resize: none;
+  }
+}
+
+.timer-seconds {
+  position: absolute;
+  top: 41px;
+  right: 37px;
+  width: 50px;
+  font-size: var(--font-size-xx-large);
+  text-align: center;
+}

@@ -13,6 +13,13 @@ public class TutorContext(DbContextOptions options) : DbContext(options)
     public DbSet<UserUsage> UserUsages { get; init; }
     public DbSet<UserWordLearningProgress> UserWordLearningProgresses { get; init; }
     public DbSet<UserStatistic> UserStatistics { get; init; }
+    public DbSet<Conversation> Conversations { get; init; }
+    public DbSet<ConversationParticipant> ConversationParticipants { get; init; }
+    public DbSet<ConversationMessage> ConversationMessages { get; init; }
+    public DbSet<UserMistakePattern> UserMistakePatterns { get; init; }
+    public DbSet<UserMistakeOccurrence> UserMistakeOccurrences { get; init; }
+    public DbSet<UserLanguageSetting> UserLanguageSettings { get; init; }
+    public DbSet<UserExerciseCompletion> UserExerciseCompletions { get; init; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

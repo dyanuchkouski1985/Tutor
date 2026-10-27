@@ -1,0 +1,120 @@
+.ui-toggleswitch,
+.ui-checkbox {
+  appearance: none;
+  position: relative;
+  flex: none;
+  margin: 0;
+  outline-color: transparent;
+  cursor: pointer;
+  transition:
+    background var(--ui-transition-duration),
+    border-color var(--ui-transition-duration),
+    outline-color var(--ui-transition-duration),
+    box-shadow var(--ui-transition-duration);
+
+  &:focus-visible {
+    box-shadow: var(--ui-focus-ring-shadow);
+    outline: var(--ui-focus-ring-width) var(--ui-focus-ring-style) var(--ui-focus-ring-color);
+    outline-offset: var(--ui-focus-ring-offset);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.ui-toggleswitch {
+  width: 2.5rem;
+  height: 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 30px;
+  background: var(--ui-toggle-background);
+  box-shadow: var(--ui-field-shadow);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    inset-inline-start: calc(0.25rem - 1px);
+    width: 1rem;
+    height: 1rem;
+    margin-block-start: -0.5rem;
+    border-radius: 50%;
+    background: var(--ui-toggle-handle);
+    transition:
+      background var(--ui-transition-duration),
+      inset-inline-start 0.2s;
+  }
+
+  &:checked {
+    background: var(--ui-primary-color);
+
+    &::before {
+      inset-inline-start: calc(2.5rem - 1.25rem - 1px);
+      background: var(--ui-toggle-handle-checked);
+    }
+  }
+
+  &:enabled:hover {
+    background: var(--ui-toggle-hover-background);
+
+    &::before {
+      background: var(--ui-toggle-handle-hover);
+    }
+
+    &:checked {
+      background: var(--ui-primary-hover-color);
+
+      &::before {
+        background: var(--ui-toggle-handle-checked);
+      }
+    }
+  }
+
+  &:disabled {
+    background: var(--ui-field-disabled-background);
+  }
+}
+
+.ui-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--ui-input-border-color);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-field-background);
+  box-shadow: var(--ui-field-shadow);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 0.875rem;
+    height: 0.875rem;
+    background: var(--ui-on-primary);
+    mask: url('/assets/images/svg/check-small.svg') center / contain no-repeat;
+    opacity: 0;
+  }
+
+  &:enabled:hover {
+    border-color: var(--ui-field-hover-border-color);
+  }
+
+  &:checked {
+    border-color: var(--ui-primary-color);
+    background: var(--ui-primary-color);
+
+    &::after {
+      opacity: 1;
+    }
+
+    &:enabled:hover {
+      border-color: var(--ui-primary-hover-color);
+      background: var(--ui-primary-hover-color);
+    }
+  }
+
+  &:disabled {
+    background: var(--ui-field-disabled-background);
+  }
+}

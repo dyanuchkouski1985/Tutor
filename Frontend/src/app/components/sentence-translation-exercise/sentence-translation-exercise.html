@@ -1,0 +1,181 @@
+@if (!isFinished) {
+  @if (staticConfigService.enableTimer && task && !isAnswered && !isBusy) {
+    <round-progress
+      class="exercise-timer"
+      [class.warn]="remainingTime <= staticConfigService.warningTimeInSeconds"
+      [current]="(100 * remainingTime) / timerValueInSeconds"
+      [max]="100"
+      [radius]="50"
+      [stroke]="10"
+      [rounded]="true"
+      [duration]="1500"
+    />
+    @if (staticConfigService.showTimerSeconds && remainingTime > 0) {
+      <div class="timer-seconds">{{ remainingTime }}</div>
+    }
+  }
+
+  <div class="sentence-translation-exercise">
+    @if (tasks.length) {
+      <div class="progressbar-container">
+        <app-progress-bar [value]="(100 * taskIndex) / tasks.length"
+          ><span>{{ taskIndex }}/{{ tasks.length }}</span></app-progress-bar
+        >
+      </div>
+    }
+
+    <app-select-button
+      [options]="translationLanguageOptions"
+      [ngModel]="sentenceLanguage"
+      (ngModelChange)="onSentenceLanguageChange($event)"
+      [disabled]="isBusy"
+      optionLabel="label"
+      optionValue="value"
+    />
+
+    @if (error) {
+      <div class="error">{{ error }}</div>
+    }
+
+    @if (task) {
+      <div class="sentence">
+        @if (isHelpShown) {
+          @for (segment of segments; track $index) {
+            @if (segment.hint) {
+              <ruby class="hint" (click)="onRevealHint(segment.hint)"
+                >{{ segment.text }}
+                @if (revealedHints.has(segment.hint)) {
+                  <rt>{{ segment.hint.translation }}</rt>
+                }
+              </ruby>
+            } @else {
+              <span>{{ segment.text }}</span>
+            }
+          }
+        } @else {
+          {{ task.sentence }}
+        }
+      </div>
+      <textarea
+        #answerInput
+        class="ui-input answer-textarea"
+        rows="2"
+        name="answer"
+        [(ngModel)]="answer"
+        [disabled]="isAnswered || isBusy"
+        (keydown.enter)="onEnter($event)"
+      ></textarea>
+
+      @if (result) {
+        <div class="result selectable">
+          <div class="verdict">
+            <img
+              [src]="'../assets/images/' + (result.isCorrect ? 'yes.png' : 'no.png')"
+              [class.dislike]="!result.isCorrect"
+            />
+            <span class="points" [class.zero]="!result.points">+{{ result.points }}</span>
+          </div>
+          <div class="natural-translation">{{ result.naturalTranslation }}</div>
+          <div class="explanation">{{ result.explanation }}</div>
+        </div>
+      }
+
+      @if (isGivenUp) {
+        <div class="result selectable">
+          <div class="natural-translation">{{ task.translation }}</div>
+        </div>
+      }
+
+      <div class="buttons">
+        @if (isAnswered) {
+          <button #nextButton type="button" class="ui-button ui-button-success" (click)="onNext()">
+            Next
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="ui-button ui-button-success"
+            [disabled]="!answer.trim() || isBusy"
+            (click)="onAnswer()"
+          >
+            Answer
+          </button>
+          <button
+            type="button"
+            class="ui-button dont-know-button"
+            [disabled]="isBusy"
+            (click)="onDontKnow()"
+          >
+            Don't know
+          </button>
+          @if (!isHelpShown && task.hints.length) {
+            <svg-icon
+              src="../../../assets/images/svg/help.svg"
+              class="help-icon pointer"
+              [class.disabled]="isBusy"
+              appTooltip="Show translations of hard words (-1 point for each one you open)"
+              tooltipPosition="top"
+              (click)="onHelp()"
+            ></svg-icon>
+          }
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="exercise-result">
+    <svg-icon src="../../../assets/images/svg/home.svg" class="home" (click)="onHome()"></svg-icon>
+
+    <div class="summary">
+      <span class="summary-correct">{{ correctCount }}</span> of {{ results.length }} correct
+      @if (totalPoints) {
+        <span class="summary-points">+{{ totalPoints }}</span>
+      }
+    </div>
+
+    <div class="cards">
+      @for (item of results; track $index) {
+        <div
+          class="card selectable"
+          [class.correct]="item.isCorrect"
+          [class.wrong]="!item.isCorrect"
+        >
+          <div class="card-header">
+            <span class="card-sentence">{{ item.sentence }}</span>
+            <span class="card-points" [class.zero]="!item.points">+{{ item.points }}</span>
+          </div>
+          @if (item.answer) {
+            <div class="card-answer">{{ item.answer }}</div>
+          }
+          <div class="card-translation">{{ item.naturalTranslation }}</div>
+        </div>
+      }
+    </div>
+
+    <div class="buttons-container">
+      <button #repeatButton type="button" class="ui-button ui-button-success" (click)="onRepeat()">
+        Repeat
+      </button>
+      <button type="button" class="ui-button back" (click)="onHome()">Home</button>
+    </div>
+  </div>
+}
+
+@if (selectedText) {
+  <svg-icon
+    src="../../../assets/images/svg/arrow-up-right.svg"
+    class="selected-text-icon pointer svg-icon-size-medium"
+    [style.top.px]="selectionTop"
+    [style.left.px]="selectionLeft"
+    appTooltip="Open in words"
+    tooltipPosition="top"
+    (mousedown)="$event.preventDefault()"
+    (click)="onOpenWordTranslationsDialog()"
+  ></svg-icon>
+}
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

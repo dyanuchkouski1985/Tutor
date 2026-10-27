@@ -1,19 +1,23 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
 import { AuthService } from './services/auth.service';
 import { UserStatisticsComponent } from './components/user-statistics/user-statistics';
+import { ThemeService } from './ui/theme/theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ButtonModule, UserStatisticsComponent],
+  imports: [RouterOutlet, UserStatisticsComponent],
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app.scss'],
 })
 export class App {
   protected readonly title = signal('TutorUI');
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    themeService: ThemeService,
+  ) {
     this.authService.runInitialLoginSequence();
   }
 }

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1080" height="1080" viewBox="0 0 1080 1080" xml:space="preserve">
+<g transform="matrix(10.19 0 0 10.19 540 540)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-50, -50)" d="M 50 0.9 C 22.9 0.9 0.9 22.9 0.9 50 C 0.9 77.1 22.9 99.1 50 99.1 C 77.1 99.1 99.1 77.1 99.1 49.99999999999999 C 99.1 22.9 77.1 0.9 50 0.9 z M 50 90.8 C 27.5 90.8 9.2 72.5 9.2 50 C 9.2 27.5 27.5 9.2 50 9.2 C 72.5 9.2 90.8 27.5 90.8 50 C 90.8 72.5 72.5 90.8 50 90.8 z" stroke-linecap="round" />
+</g>
+<g transform="matrix(10.19 0 0 10.19 540 540)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke"  transform=" translate(-50, -50)" d="M 38 34 L 62 34 C 64.2 34 66 35.8 66 38 L 66 62 C 66 64.2 64.2 66 62 66 L 38 66 C 35.8 66 34 64.2 34 62 L 34 38 C 34 35.8 35.8 34 38 34 z" stroke-linecap="round" />
+</g>
+</svg>

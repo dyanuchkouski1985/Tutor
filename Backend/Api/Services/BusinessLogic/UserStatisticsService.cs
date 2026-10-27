@@ -11,13 +11,26 @@ namespace Api.Services.BusinessLogic;
 
 public class UserStatisticsService(
     TutorContext dbContext,
-    ISecurityContext securityContext)
+    ISecurityContext securityContext,
+    ITranslationsWordExerciseService translationsWordExerciseService,
+    ICrosswordExerciseService crosswordExerciseService,
+    IRepeatPausedWordsExerciseService repeatPausedWordsExerciseService,
+    IGuessService guessService,
+    IExplainService explainService,
+    ITomorrowWordsService tomorrowWordsService)
     : IUserStatisticsService
 {
     private const int periodInDays = 8;
     private TutorContext dbContext { get; } = dbContext;
     private Guid userId { get; } = Guid.Parse(securityContext.GetCurrentUserId());
     private string email { get; } = securityContext.GetCurrentUserEmail();
+    private ITranslationsWordExerciseService translationsWordExerciseService { get; } = translationsWordExerciseService;
+    private ICrosswordExerciseService crosswordExerciseService { get; } = crosswordExerciseService;
+    private IRepeatPausedWordsExerciseService repeatPausedWordsExerciseService { get; } =
+        repeatPausedWordsExerciseService;
+    private IGuessService guessService { get; } = guessService;
+    private IExplainService explainService { get; } = explainService;
+    private ITomorrowWordsService tomorrowWordsService { get; } = tomorrowWordsService;
 
     public async Task<UserStatisticsRepresentation> GetAsync(GetUserStatisticsRequest request)
     {
@@ -26,15 +39,29 @@ public class UserStatisticsService(
             .CountAsync();
 
         var now = DateOnly.FromDateTime(DateTime.Now);
-        var availableRepeatPausedWordsCount = await GetAvailableRepeatPausedWordsCountAsync(request.Language);
+        var availableRepeatPausedWordsCount =
+            await repeatPausedWordsExerciseService.CountAvailableWordsAsync(request.Language);
+        var availableTranslationsWordsCount =
+            await translationsWordExerciseService.CountAvailableWordsAsync(request.Language);
+        var availableCrosswordWordsCount = await crosswordExerciseService.CountAvailableWordsAsync(request.Language);
+        var availableGuessWordsCount = await guessService.CountAvailableWordsAsync(request.Language);
+        var availableExplainWordsCount = await explainService.CountAvailableWordsAsync(request.Language);
+        var availableTomorrowWordsCount = await tomorrowWordsService.CountAvailableWordsAsync(request.Language);
+        var dailyStatistic = await dbContext.UserStatistics.FirstOrDefaultAsync(us =>
+            us.UserId == userId && us.Language == request.Language && us.Date == now);
 
         UserStatisticsRepresentation result = new()
         {
             Email = email,
-            DailyPercentage =
-                (await dbContext.UserStatistics.FirstOrDefaultAsync(us =>
-                    us.UserId == userId && us.Language == request.Language &&
-                    us.Date == now))?.Percentage ?? default,
+            DailyPercentage = dailyStatistic?.Percentage ?? default,
+            ConversationPercentage = dailyStatistic?.ConversationPercentage ?? default,
+            ConversationMaxDailyPoints = GeneralConstants.ConversationMaxDailyPoints,
+            CountabilityPercentage = dailyStatistic?.CountabilityPercentage ?? default,
+            CountabilityMaxDailyPoints = GeneralConstants.CountabilityMaxDailyPoints,
+            VerbFormsPercentage = dailyStatistic?.VerbFormsPercentage ?? default,
+            VerbFormsMaxDailyPoints = GeneralConstants.VerbFormsMaxDailyPoints,
+            ArticlesPercentage = dailyStatistic?.ArticlesPercentage ?? default,
+            ArticlesMaxDailyPoints = GeneralConstants.ArticlesMaxDailyPoints,
             TotalNumberOfWords = totalNumberOfWords,
             TotalNumberOfCompletedWords = 
                 await GetTotalNumberOfWordsWithProgressAsync(WordLearningProgress.Completed, request.Language),
@@ -49,7 +76,18 @@ public class UserStatisticsService(
             LastDaysPercentages = await GetLastDaysPercentagesAsync(request.Language),
             AvailableRepeatPausedWordsCount = availableRepeatPausedWordsCount,
             IsAvailableRepeatPausedWordsExercise = availableRepeatPausedWordsCount >=
-                                                   GeneralConstants.RepeatWordsExerciseWordsCount
+                                                   GeneralConstants.RepeatWordsExerciseWordsCount,
+            IsAvailableTranslationsWordExercise = availableTranslationsWordsCount >=
+                                                  GeneralConstants.WordTranslationsExerciseWordsCount,
+            IsAvailableCrosswordExercise = availableCrosswordWordsCount >= GeneralConstants.CrosswordMinWordsCount,
+            IsAvailableGuessExercise = availableGuessWordsCount >= GeneralConstants.GuessExerciseWordsCount,
+            IsAvailableExplainExercise = availableExplainWordsCount >= GeneralConstants.ExplainExerciseWordsCount,
+            IsAvailableListeningExercise = ListeningService.IsSupported(request.Language),
+            IsAvailableCountabilityExercise = CountabilityService.IsSupported(request.Language),
+            IsAvailableVerbFormsExercise = VerbFormsService.IsSupported(request.Language),
+            IsAvailableArticlesExercise = ArticlesService.IsSupported(request.Language),
+            IsAvailableTomorrowWords = (dailyStatistic?.Percentage ?? 0) >= GeneralConstants.DailyGoalPoints
+                                       && availableTomorrowWordsCount > 0
         };
 
         result.TotalNumberOfWordsWithProgress0 = result.TotalNumberOfWords -
@@ -60,6 +98,39 @@ public class UserStatisticsService(
                                                  result.TotalNumberOfPausedWords;
 
         return result;
+    }
+
+    public async Task<UserStatisticsCalendarRepresentation> GetCalendarAsync(
+        GetUserStatisticsCalendarRequest request)
+    {
+        var to = DateOnly.FromDateTime(DateTime.Now);
+        var from = request.Months <= 0
+            ? await dbContext.UserStatistics
+                .Where(us => us.UserId == userId && us.Language == request.Language && us.Date <= to)
+                .MinAsync(us => (DateOnly?)us.Date) ?? to
+            : to.AddMonths(-Math.Min(request.Months, GeneralConstants.CalendarMaxMonths)).AddDays(1);
+
+        var days = await dbContext.UserStatistics
+            .Where(us =>
+                us.UserId == userId && us.Language == request.Language &&
+                us.Date >= from && us.Date <= to)
+            .OrderBy(us => us.Date)
+            .Select(us => new UserStatisticsCalendarDayRepresentation
+            {
+                Date = us.Date,
+                Percentage = us.Percentage,
+                ConversationPercentage = us.ConversationPercentage
+            })
+            .ToListAsync();
+
+        return new UserStatisticsCalendarRepresentation
+        {
+            From = from,
+            To = to,
+            DailyGoalPoints = GeneralConstants.DailyGoalPoints,
+            ConversationMaxDailyPoints = GeneralConstants.ConversationMaxDailyPoints,
+            Days = days
+        };
     }
 
     private Task<int> GetTotalNumberOfWordsWithProgressAsync(WordLearningProgress wordLearningProgress,
@@ -93,31 +164,5 @@ public class UserStatisticsService(
         }
 
         return statistics.OrderBy(us => us.Date).Select(us => us.Percentage).ToList();
-    }
-
-    private Task<int> GetAvailableRepeatPausedWordsCountAsync(Language language)
-    {
-        var query =
-            from w in dbContext.Words
-                .Where(w => w.Language == language
-                            && w.Translations.Any(t =>
-                                t.UserTranslations.Any(ut => ut.UserId == userId)))
-            from uwlp in dbContext.UserWordLearningProgresses
-                .Where(uwlp =>
-                    uwlp.WordId == w.Id && uwlp.UserId == userId &&
-                    (uwlp.WordLearningProgress == WordLearningProgress.Paused &&
-                     uwlp.LastLearningDate <
-                     DateTime.Now.AddDays(-GeneralConstants.RepeatWordsLearnedGreaterThanDays) ||
-                     uwlp.WordLearningProgress == WordLearningProgress.Completed &&
-                     uwlp.LastLearningDate <
-                     DateTime.Now.AddDays(-GeneralConstants.CompletedWordsLearnedGreaterThanDays)))
-                .DefaultIfEmpty()
-            where uwlp.WordLearningProgress == WordLearningProgress.Paused || uwlp.WordLearningProgress == WordLearningProgress.Completed
-            select new
-            {
-                w.Id
-            };
-
-        return query.CountAsync();
     }
 }

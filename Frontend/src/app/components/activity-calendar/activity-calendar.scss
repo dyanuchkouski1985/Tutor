@@ -1,0 +1,134 @@
+$cell-size: 13px;
+$cell-gap: 3px;
+
+.activity-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: var(--color-primary);
+
+  .view-switch {
+    display: flex;
+    justify-content: center;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .summary {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    text-align: center;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .value {
+      font-size: xx-large;
+      color: var(--color-green);
+    }
+
+    .label {
+      font-size: small;
+      opacity: 0.7;
+    }
+  }
+
+  .calendar {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .week-days {
+    display: flex;
+    flex-direction: column;
+    gap: $cell-gap;
+    padding-top: 14px;
+
+    > span {
+      height: $cell-size;
+      line-height: $cell-size;
+    }
+  }
+
+  .grid-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .grid {
+    display: flex;
+    gap: $cell-gap;
+    min-width: 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .week {
+    display: flex;
+    flex-direction: column;
+    gap: $cell-gap;
+
+    .month {
+      height: 11px;
+      width: $cell-size;
+      overflow: visible;
+      white-space: nowrap;
+    }
+  }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: $cell-gap;
+    font-size: small;
+
+    > span:first-child {
+      margin-right: 4px;
+    }
+
+    > span:last-child {
+      margin-left: 4px;
+    }
+  }
+
+  .cell {
+    display: inline-block;
+    flex-shrink: 0;
+    width: $cell-size;
+    height: $cell-size;
+    border-radius: 3px;
+
+    &.empty {
+      visibility: hidden;
+    }
+
+    &.level-0 {
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    }
+
+    &.level-1 {
+      background: var(--ui-amber-400);
+    }
+
+    &.level-2 {
+      background: var(--color-green);
+    }
+
+    &.today {
+      outline: 2px solid var(--color-primary);
+      outline-offset: -1px;
+    }
+  }
+}

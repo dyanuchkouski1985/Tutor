@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore;
+using Identity.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -16,8 +17,8 @@ public class AuthorizationController(
     IOpenIddictApplicationManager applicationManager,
     IOpenIddictAuthorizationManager authorizationManager,
     IOpenIddictScopeManager scopeManager,
-    SignInManager<IdentityUser> signInManager,
-    UserManager<IdentityUser> userManager)
+    SignInManager<ApplicationUser> signInManager,
+    UserManager<ApplicationUser> userManager)
     : Controller
 {
     [HttpPost("~/connect/token")]
@@ -53,7 +54,8 @@ public class AuthorizationController(
             // changed since the authorization code/refresh token was issued.
             identity.SetClaim(Claims.Subject, await userManager.GetUserIdAsync(user))
                     .SetClaim(Claims.Email, await userManager.GetEmailAsync(user))
-                    .SetClaim(Claims.Name, await userManager.GetUserNameAsync(user));
+                    .SetClaim(Claims.Name, await userManager.GetUserNameAsync(user))
+                    .SetClaim(Claims.Gender, user.Gender.ToString());
 
             identity.SetScopes(request.GetScopes());
 
@@ -148,7 +150,7 @@ public class AuthorizationController(
         });
     }
 
-    private async Task<IActionResult> IssueAuthorizationCodeAsync(OpenIddictRequest request, IdentityUser user, object application)
+    private async Task<IActionResult> IssueAuthorizationCodeAsync(OpenIddictRequest request, ApplicationUser user, object application)
     {
         var authorizations = await authorizationManager.FindAsync(
            subject: await userManager.GetUserIdAsync(user),
@@ -167,7 +169,8 @@ public class AuthorizationController(
         // Add the claims that will be persisted in the tokens.
         identity.SetClaim(Claims.Subject, await userManager.GetUserIdAsync(user))
                 .SetClaim(Claims.Email, await userManager.GetEmailAsync(user))
-                .SetClaim(Claims.Name, await userManager.GetUserNameAsync(user));
+                .SetClaim(Claims.Name, await userManager.GetUserNameAsync(user))
+                .SetClaim(Claims.Gender, user.Gender.ToString());
 
         // Note: in this sample, the granted scopes match the requested scope
         // but you may want to allow the user to uncheck specific scopes.
@@ -238,6 +241,14 @@ public class AuthorizationController(
                 yield return Destinations.AccessToken;
 
                 if (claim.Subject.HasScope(Scopes.Roles))
+                    yield return Destinations.IdentityToken;
+
+                yield break;
+
+            case Claims.Gender:
+                yield return Destinations.AccessToken;
+
+                if (claim.Subject.HasScope(Scopes.Profile))
                     yield return Destinations.IdentityToken;
 
                 yield break;

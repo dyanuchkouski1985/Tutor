@@ -1,3 +1,4 @@
+using Api.Constants;
 using Api.Enums;
 using Api.Interfaces.Services;
 using Api.Requests.UserStatistics;
@@ -19,5 +20,17 @@ public class UserStatisticsController(IUserStatisticsService statisticsService) 
             Language = language
         };
         return Ok(await statisticsService.GetAsync(request));
+    }
+
+    [HttpGet("Calendar")]
+    public async Task<IActionResult> GetCalendar(Language language,
+        int months = GeneralConstants.CalendarDefaultMonths)
+    {
+        GetUserStatisticsCalendarRequest request = new()
+        {
+            Language = language,
+            Months = months
+        };
+        return Ok(await statisticsService.GetCalendarAsync(request));
     }
 }

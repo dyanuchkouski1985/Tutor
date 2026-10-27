@@ -1,0 +1,88 @@
+.ui-selectbutton {
+  display: inline-flex;
+  vertical-align: bottom;
+  user-select: none;
+  border-radius: var(--ui-field-radius);
+}
+
+.ui-togglebutton {
+  display: inline-flex;
+  position: relative;
+  overflow: hidden;
+  padding: 0.25rem;
+  border: 1px solid var(--ui-togglebutton-background);
+  border-width: 1px 1px 1px 0;
+  border-radius: 0;
+  outline-color: transparent;
+  background: var(--ui-togglebutton-background);
+  color: var(--ui-togglebutton-color);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--ui-transition-duration),
+    color var(--ui-transition-duration),
+    border-color var(--ui-transition-duration),
+    outline-color var(--ui-transition-duration),
+    box-shadow var(--ui-transition-duration);
+
+  &:first-child {
+    border-inline-start-width: 1px;
+    border-start-start-radius: var(--ui-field-radius);
+    border-end-start-radius: var(--ui-field-radius);
+  }
+
+  &:last-child {
+    border-start-end-radius: var(--ui-field-radius);
+    border-end-end-radius: var(--ui-field-radius);
+  }
+
+  &.small {
+    font-size: var(--ui-field-sm-font-size);
+  }
+
+  &:not(:disabled):not(.checked):hover {
+    color: var(--ui-togglebutton-hover-color);
+  }
+
+  &.checked {
+    color: var(--ui-togglebutton-checked-color);
+
+    .ui-togglebutton-content {
+      background: var(--ui-togglebutton-checked-content-background);
+      box-shadow:
+        0 1px 2px 0 rgba(0, 0, 0, 0.02),
+        0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  &:focus-visible {
+    position: relative;
+    z-index: 1;
+    box-shadow: var(--ui-focus-ring-shadow);
+    outline: var(--ui-focus-ring-width) var(--ui-focus-ring-style) var(--ui-focus-ring-color);
+    outline-offset: var(--ui-focus-ring-offset);
+  }
+
+  &:disabled {
+    cursor: default;
+    background: var(--ui-field-disabled-background);
+    border-color: var(--ui-field-disabled-background);
+    color: var(--ui-field-disabled-color);
+  }
+}
+
+.ui-togglebutton-content {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--ui-radius-content);
+  background: transparent;
+  transition:
+    background var(--ui-transition-duration),
+    box-shadow var(--ui-transition-duration);
+}

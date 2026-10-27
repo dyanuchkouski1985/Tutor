@@ -1,0 +1,282 @@
+<div class="desk mistakes-exercise">
+  <svg-icon
+    src="../../../assets/images/svg/home.svg"
+    class="home-icon svg-icon-size-large pointer"
+    (click)="onHome()"
+  ></svg-icon>
+
+  @if (staticConfigService.enableTimer && task && !isFinished && !result && !isBusy) {
+    <round-progress
+      class="exercise-timer"
+      [class.warn]="remainingTime <= staticConfigService.warningTimeInSeconds"
+      [current]="(100 * remainingTime) / staticConfigService.timerValueInSeconds"
+      [max]="100"
+      [radius]="50"
+      [stroke]="10"
+      [rounded]="true"
+      [duration]="1500"
+    />
+    @if (staticConfigService.showTimerSeconds && remainingTime > 0) {
+      <div class="timer-seconds">{{ remainingTime }}</div>
+    }
+  }
+
+  @if (tasks.length) {
+    <div class="progressbar-container">
+      <app-progress-bar [value]="(100 * answersHistory.length) / tasks.length"
+        ><span>{{ answersHistory.length }}/{{ tasks.length }}</span></app-progress-bar
+      >
+      <div class="answers-history">
+        @for (isCorrect of answersHistory; track $index) {
+          <span>
+            <svg-icon
+              [class.completed]="isCorrect"
+              [src]="'../../../assets/images/svg/' + (isCorrect ? 'check.svg' : 'cross.svg')"
+              class="svg-animation-grow"
+            ></svg-icon>
+            <svg-icon
+              src="../../../assets/images/svg/help.svg"
+              class="svg-animation-grow help-icon svg-icon-size-small"
+              [ngClass]="{ completed: isCorrect, hidden: !helpHistory[$index] }"
+            ></svg-icon>
+          </span>
+        }
+      </div>
+    </div>
+  }
+
+  @if (task && !isFinished) {
+    <form (ngSubmit)="onSubmit()">
+      <div class="prompt">
+        Fix the mistake:
+        <span
+          class="progress"
+          [ngClass]="progressClass(task.progress)"
+          appTooltip="Status of this mistake"
+          tooltipPosition="top"
+          >{{ progressLabel(task.progress) }}</span
+        >
+      </div>
+      <div class="sentence" [class.selectable]="result">
+        <span>{{ sentenceParts.before }}</span
+        ><span class="fragment">{{ sentenceParts.fragment }}</span
+        ><span>{{ sentenceParts.after }}</span>
+      </div>
+
+      @if (!result) {
+        <div class="answer-container">
+          <textarea
+            appAutoFocus
+            class="ui-input answer-textarea"
+            rows="2"
+            name="answer"
+            [(ngModel)]="answer"
+            [disabled]="isListening || isBusy"
+            (keydown.enter)="$event.preventDefault(); onSubmit()"
+          ></textarea>
+
+          @if (speechService.isListeningSupported) {
+            <div class="voice-buttons">
+              <button
+                type="button"
+                class="ui-button microphone-button"
+                [class.listening]="isListening"
+                [disabled]="isBusy"
+                [appTooltip]="isListening ? 'Stop listening' : 'Say the fixed sentence'"
+                tooltipPosition="top"
+                (click)="onMicrophone()"
+              >
+                <svg-icon
+                  src="../../../assets/images/svg/speech.svg"
+                  class="button-primary-color svg-icon-size-medium"
+                ></svg-icon>
+              </button>
+              @if (isListening) {
+                <button
+                  type="button"
+                  class="ui-button cancel-listening-button"
+                  appTooltip="Discard what you just said"
+                  tooltipPosition="top"
+                  (click)="onCancelListening()"
+                >
+                  <svg-icon
+                    src="../../../assets/images/svg/cross.svg"
+                    class="button-primary-color svg-icon-size-medium"
+                  ></svg-icon>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        @if (isListening) {
+          <div class="interim-text">{{ interimText || 'Listening...' }}</div>
+        }
+      } @else {
+        <div class="result" [class.wrong]="!result.isCorrect">
+          <div class="verdict">
+            <img
+              [src]="'../assets/images/' + (result.isCorrect ? 'yes.png' : 'no.png')"
+              [class.dislike]="!result.isCorrect"
+            />
+            @if (result.points) {
+              <span class="points">+{{ result.points }}</span>
+            }
+          </div>
+          @if (!result.isCorrect && !isGivenUp) {
+            <div class="your-answer">{{ answer }}</div>
+          }
+          <div class="corrected selectable">
+            {{ result.correctedSentence }}
+            <svg-icon
+              src="../../../assets/images/svg/play.svg"
+              class="play-icon pointer svg-icon-size-medium"
+              appTooltip="Listen"
+              tooltipPosition="bottom"
+              (click)="onPlayCorrected()"
+            ></svg-icon>
+          </div>
+          @if (result.explanation) {
+            <div class="explanation selectable">{{ result.explanation }}</div>
+          }
+          <div class="rule">
+            <span class="category">{{ task.category }}</span> · {{ task.rule }}
+          </div>
+          @if (task.example) {
+            <div class="own-example">
+              You wrote on {{ task.example.createdDate | date: 'd MMM' }}:
+              <span class="own-fragment">{{ task.example.fragment }}</span>
+              <span class="arrow">&rarr;</span>
+              <span class="own-correction">{{ task.example.correction }}</span>
+            </div>
+          }
+          @if (result.isCounted) {
+            <div class="progress-change">
+              <span class="progress" [ngClass]="progressClass(task.progress)">
+                {{ progressLabel(task.progress) }}
+              </span>
+              @if (result.progress !== task.progress) {
+                <span class="arrow">&rarr;</span>
+                <span class="progress" [ngClass]="progressClass(result.progress)">
+                  {{ progressLabel(result.progress) }}
+                </span>
+              }
+            </div>
+          }
+          @if (!result.isCounted) {
+            <div class="not-counted">Already practised today, so this one does not count.</div>
+          }
+        </div>
+      }
+
+      @if (error) {
+        <div class="error">{{ error }}</div>
+      }
+
+      <div class="buttons-container">
+        <button
+          #submitButton
+          type="submit"
+          class="ui-button ui-button-success"
+          [disabled]="isBusy || isListening || (!result && !answer.trim())"
+        >
+          {{ result ? 'Next' : 'Check' }}
+        </button>
+        @if (!result) {
+          <button
+            type="button"
+            class="ui-button"
+            [disabled]="isBusy || isListening"
+            (click)="onDontKnow()"
+          >
+            Don't know
+          </button>
+        }
+        @if (!result && !isHintShown) {
+          <svg-icon
+            src="../../../assets/images/svg/help.svg"
+            class="help-icon pointer"
+            (click)="onHint()"
+          ></svg-icon>
+        }
+      </div>
+    </form>
+  }
+
+  @if (isFinished) {
+    <div class="summary">
+      <div>{{ correctCount }} of {{ tasks.length }} fixed</div>
+      <div class="summary-points">+{{ points }} points</div>
+      @if (masteredCount) {
+        <div class="summary-mastered">{{ masteredCount }} mastered</div>
+      }
+      <div class="cards">
+        @for (item of results; track $index) {
+          @let parts = splitSentence(item.sentence, item.fragment);
+          <div
+            class="card selectable"
+            [class.correct]="item.isCorrect"
+            [class.wrong]="!item.isCorrect"
+          >
+            <div class="card-header">
+              <span class="card-sentence">
+                <span>{{ parts.before }}</span
+                ><span class="fragment">{{ parts.fragment }}</span
+                ><span>{{ parts.after }}</span>
+              </span>
+              <span class="card-points" [class.zero]="!item.points">+{{ item.points }}</span>
+            </div>
+            @if (item.answer) {
+              <div class="card-answer">{{ item.answer }}</div>
+            }
+            <div class="card-corrected">{{ item.correctedSentence }}</div>
+          </div>
+        }
+      </div>
+      <div class="buttons-container">
+        <button
+          #mistakesButton
+          type="button"
+          class="ui-button ui-button-success"
+          (click)="onMistakes()"
+        >
+          My mistakes
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (isLoaded && !tasks.length) {
+    <div class="empty">
+      @if (error) {
+        <div class="error">{{ error }}</div>
+      } @else {
+        <div>Nothing to practise right now. Come back tomorrow or have a conversation first.</div>
+      }
+      <div class="buttons-container">
+        <button type="button" class="ui-button ui-button-success" (click)="onMistakes()">
+          My mistakes
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+@if (selectedText) {
+  <svg-icon
+    src="../../../assets/images/svg/arrow-up-right.svg"
+    class="selected-text-icon pointer svg-icon-size-medium"
+    [style.top.px]="selectionTop"
+    [style.left.px]="selectionLeft"
+    appTooltip="Open in words"
+    tooltipPosition="top"
+    (mousedown)="$event.preventDefault()"
+    (click)="onOpenSelection()"
+  ></svg-icon>
+}
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

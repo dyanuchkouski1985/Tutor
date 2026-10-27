@@ -1,0 +1,240 @@
+<div class="conversation-dialog-container">
+  <div class="context-container">
+    <div class="ui-floatlabel">
+      <textarea
+        class="ui-input"
+        appAutoFocus
+        [(ngModel)]="context"
+        [maxlength]="conversationConstants.CONTEXT_MAX_LENGTH"
+        [class.ng-invalid]="!!contextIssue"
+        [class.ng-dirty]="!!contextIssue"
+        id="context-input"
+        rows="4"
+        (ngModelChange)="onContextChange()"
+        placeholder=" "
+      ></textarea>
+      <label for="context-input">Context</label>
+    </div>
+
+    <ng-container *ngTemplateOutlet="issueTemplate; context: { $implicit: contextIssue }" />
+  </div>
+
+  <div class="auto-format-container">
+    <input
+      type="checkbox"
+      class="ui-toggleswitch"
+      [(ngModel)]="autoFormat"
+      name="autoFormat"
+      id="auto-format-input"
+    />
+    <label for="auto-format-input">
+      Format my lines automatically - punctuation, capital letters and misheard words are fixed when
+      recording stops
+    </label>
+  </div>
+
+  <div class="auto-format-container">
+    <input
+      type="checkbox"
+      class="ui-toggleswitch"
+      [(ngModel)]="sendImmediately"
+      name="sendImmediately"
+      id="send-immediately-input"
+    />
+    <label for="send-immediately-input">
+      Send my line as soon as recording stops - no chance to read it over or edit it first
+    </label>
+  </div>
+
+  <div class="auto-format-container">
+    <input
+      type="checkbox"
+      class="ui-toggleswitch"
+      [(ngModel)]="useLearningWords"
+      name="useLearningWords"
+      id="use-learning-words-input"
+    />
+    <label for="use-learning-words-input" class="learning-words-label">
+      <span>Work my words into the conversation - the ones still on</span>
+      <app-star [wordLearningProgress]="wordLearningProgressEnum.None"></app-star>
+      <app-star [wordLearningProgress]="wordLearningProgressEnum.One"></app-star>
+      <app-star [wordLearningProgress]="wordLearningProgressEnum.Two"></app-star>
+    </label>
+  </div>
+
+  <div class="participants-container">
+    <div class="participant-block">
+      <div class="participant-row">
+        <div class="ui-floatlabel participant-name">
+          <input
+            class="ui-input"
+            type="text"
+            [(ngModel)]="userParticipant.name"
+            [maxlength]="conversationConstants.PARTICIPANT_NAME_MAX_LENGTH"
+            [class.ng-invalid]="!!participantIssue(userParticipant)"
+            [class.ng-dirty]="!!participantIssue(userParticipant)"
+            name="userName"
+            id="user-name-input"
+            (ngModelChange)="onParticipantChange(userParticipant)"
+            placeholder=" "
+          />
+          <label for="user-name-input">You</label>
+        </div>
+
+        <app-select-button
+          class="participant-gender"
+          [options]="genderOptions"
+          [(ngModel)]="userParticipant.gender"
+          size="small"
+          name="userGender"
+          appTooltip="Your voice in this conversation"
+          tooltipPosition="bottom"
+        />
+
+        <div class="ui-floatlabel participant-description">
+          <textarea
+            class="ui-input"
+            [(ngModel)]="userParticipant.description"
+            [maxlength]="conversationConstants.PARTICIPANT_DESCRIPTION_MAX_LENGTH"
+            [class.ng-invalid]="!!participantIssue(userParticipant)"
+            [class.ng-dirty]="!!participantIssue(userParticipant)"
+            name="userDescription"
+            id="user-description-input"
+            rows="3"
+            (ngModelChange)="onParticipantChange(userParticipant)"
+            placeholder=" "
+          ></textarea>
+          <label for="user-description-input">Your role</label>
+        </div>
+      </div>
+
+      <ng-container
+        *ngTemplateOutlet="issueTemplate; context: { $implicit: participantIssue(userParticipant) }"
+      />
+    </div>
+
+    @for (participant of otherParticipants; track $index) {
+      <div class="participant-block">
+        <div class="participant-row">
+          <div class="ui-floatlabel participant-name">
+            <input
+              class="ui-input"
+              type="text"
+              [(ngModel)]="participant.name"
+              [maxlength]="conversationConstants.PARTICIPANT_NAME_MAX_LENGTH"
+              [class.ng-invalid]="!!participantIssue(participant)"
+              [class.ng-dirty]="!!participantIssue(participant)"
+              name="participantName{{ $index }}"
+              id="participant-name-input-{{ $index }}"
+              (ngModelChange)="onParticipantChange(participant)"
+              placeholder=" "
+            />
+            <label for="participant-name-input-{{ $index }}">Name</label>
+          </div>
+
+          <app-select-button
+            class="participant-gender"
+            [options]="genderOptions"
+            [(ngModel)]="participant.gender"
+            size="small"
+            name="participantGender{{ $index }}"
+            appTooltip="Voice gender"
+            tooltipPosition="bottom"
+          />
+
+          <div class="ui-floatlabel participant-description">
+            <textarea
+              class="ui-input"
+              [(ngModel)]="participant.description"
+              [maxlength]="conversationConstants.PARTICIPANT_DESCRIPTION_MAX_LENGTH"
+              [class.ng-invalid]="!!participantIssue(participant)"
+              [class.ng-dirty]="!!participantIssue(participant)"
+              name="participantDescription{{ $index }}"
+              id="participant-description-input-{{ $index }}"
+              rows="3"
+              (ngModelChange)="onParticipantChange(participant)"
+              placeholder=" "
+            ></textarea>
+            <label for="participant-description-input-{{ $index }}">Description</label>
+          </div>
+
+          @if (canRemoveParticipant) {
+            <svg-icon
+              src="../../../assets/images/svg/delete.svg"
+              class="pointer delete-icon svg-icon-size-medium"
+              appTooltip="Remove participant"
+              tooltipPosition="bottom"
+              (click)="onRemoveParticipant($index)"
+            ></svg-icon>
+          }
+        </div>
+
+        <ng-container
+          *ngTemplateOutlet="issueTemplate; context: { $implicit: participantIssue(participant) }"
+        />
+      </div>
+    }
+
+    @if (canAddParticipant) {
+      <svg-icon
+        src="../../../assets/images/svg/plus.svg"
+        class="add-participant-icon pointer svg-icon-size-medium"
+        appTooltip="Add participant"
+        tooltipPosition="bottom"
+        (click)="onAddParticipant()"
+      ></svg-icon>
+    }
+  </div>
+
+  @if (reason) {
+    <div class="reason-container">
+      <div class="reason-text">{{ reason }}</div>
+    </div>
+  }
+
+  <div class="actions-container">
+    @if (!isEditing) {
+      <button
+        type="button"
+        class="ui-button generate-button"
+        [disabled]="isBusy"
+        appTooltip="Let AI invent a random conversation - edit anything before creating it"
+        tooltipPosition="top"
+        (click)="onGenerate()"
+      >
+        <svg-icon
+          src="../../../assets/images/svg/ai.svg"
+          class="button-primary-color svg-icon-size-medium"
+        ></svg-icon>
+        Generate
+      </button>
+    }
+
+    <button type="submit" class="ui-button" [disabled]="!isValid" (click)="onSave()">
+      <svg-icon
+        src="../../../assets/images/svg/check.svg"
+        class="button-primary-color svg-icon-size-medium"
+      ></svg-icon>
+      {{ isEditing ? 'Save' : 'Create' }}
+    </button>
+  </div>
+</div>
+
+<ng-template #issueTemplate let-issue>
+  @if (issue) {
+    <div class="field-issue">
+      <div>{{ issue.problem }}</div>
+      @if (issue.suggestion) {
+        <div class="field-issue-suggestion">{{ issue.suggestion }}</div>
+      }
+    </div>
+  }
+</ng-template>
+
+<app-toast position="bottom-left" />
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

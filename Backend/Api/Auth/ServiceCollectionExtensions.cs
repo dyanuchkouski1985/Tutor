@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
             {
                 options.IncludeErrorDetails = true;
                 options.Authority = configuration["IdentityEndpoint"];
+                options.RefreshInterval = TimeSpan.FromSeconds(10);
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {

@@ -1,0 +1,40 @@
+.ui-autocomplete {
+  display: inline-flex;
+  position: relative;
+
+  .ui-autocomplete-input {
+    flex: 1 1 auto;
+    width: 1%;
+  }
+}
+
+.ui-autocomplete-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: fixed;
+  z-index: 99600;
+  max-height: 200px;
+  margin: 0;
+  padding: 0.25rem;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--ui-select-border-color);
+  border-radius: var(--ui-select-radius);
+  background: var(--ui-select-background);
+  color: var(--ui-select-color);
+  box-shadow: var(--ui-select-shadow);
+}
+
+.ui-autocomplete-option {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--ui-radius-sm);
+  color: var(--ui-option-color);
+  white-space: nowrap;
+  cursor: pointer;
+
+  &.focused {
+    background: var(--ui-option-focus-background);
+    color: var(--ui-option-focus-color);
+  }
+}

@@ -1,0 +1,130 @@
+<div class="speech-exercise-container">
+  <div class="header-container">
+    <svg-icon
+      src="../../../assets/images/svg/home.svg"
+      class="home-icon svg-icon-size-large pointer"
+      (click)="onHome()"
+    ></svg-icon>
+
+    <div class="add-conversation-container" [class.disabled]="!canCreateConversation">
+      <svg-icon
+        src="../../../assets/images/svg/add-word.svg"
+        class="add-conversation-icon pointer"
+        [appTooltip]="
+          canCreateConversation ? 'New conversation' : 'Delete a conversation to create another'
+        "
+        tooltipPosition="bottom"
+        (click)="onOpenConversationDialog()"
+      ></svg-icon>
+    </div>
+
+    <div class="title">Speech</div>
+  </div>
+
+  <div class="conversations">
+    @if (items.length) {
+      <div class="sort-bar">
+        @for (option of sortOptions; track option.field) {
+          <button
+            type="button"
+            class="ui-button ui-button-outlined sort-button"
+            [class.active]="option.field === sortField"
+            (click)="onSort(option.field)"
+          >
+            {{ option.label }}
+            @if (option.field === sortField) {
+              <svg-icon
+                class="svg-icon-size-small"
+                [src]="
+                  '../../../assets/images/svg/' +
+                  (sortOrder === appConstants.SORT_ORDER_UP ? 'sort-up.svg' : 'sort-down.svg')
+                "
+              ></svg-icon>
+            }
+          </button>
+        }
+      </div>
+    }
+
+    <div class="cards">
+      @for (conversation of sortedItems; track conversation.id) {
+        <div class="card">
+          <div class="title-row">
+            <span class="title-text pointer" (click)="onOpenConversation(conversation.id)">
+              {{ conversation.title }}
+            </span>
+            <svg-icon
+              src="../../../assets/images/svg/arrow-up-right.svg"
+              class="pointer open-conversation-icon svg-icon-size-medium"
+              appTooltip="Open"
+              tooltipPosition="bottom"
+              (click)="onOpenConversation(conversation.id)"
+            ></svg-icon>
+            <svg-icon
+              src="../../../assets/images/svg/edit.svg"
+              class="pointer edit-icon svg-icon-size-medium"
+              appTooltip="Edit"
+              tooltipPosition="bottom"
+              (click)="onEditConversation(conversation.id)"
+            ></svg-icon>
+            <svg-icon
+              src="../../../assets/images/svg/delete.svg"
+              class="pointer delete-icon svg-icon-size-medium"
+              appTooltip="Delete"
+              tooltipPosition="bottom"
+              (click)="onConfirmDelete($event, panelConfirmDelete, conversation.id)"
+            ></svg-icon>
+            <app-popover #panelConfirmDelete>
+              <div class="confirm-delete-container">
+                <svg-icon
+                  class="svg-icon-size-medium pointer cross-icon mr-10"
+                  src="../../../assets/images/svg/cross.svg"
+                  (click)="panelConfirmDelete.hide()"
+                ></svg-icon>
+                <svg-icon
+                  class="svg-icon-size-medium pointer"
+                  src="../../../assets/images/svg/check.svg"
+                  (click)="onDeleteConversation(panelConfirmDelete)"
+                ></svg-icon>
+              </div>
+            </app-popover>
+          </div>
+
+          @if (conversation.context) {
+            <div
+              #contextText
+              class="context-text"
+              [appTooltip]="conversation.context"
+              [tooltipDisabled]="!isTruncated(contextText)"
+              tooltipPosition="bottom"
+            >
+              {{ conversation.context }}
+            </div>
+          }
+
+          <div class="participants">{{ conversation.participantNames.join(', ') }}</div>
+
+          <div class="meta">
+            <span>{{ conversation.messagesCount }} messages</span>
+            <span>Created {{ conversation.createdDate | date: 'd MMM y' }}</span>
+            <span>Last activity {{ conversation.lastActivityDate | date: 'd MMM y, H:mm' }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (loadError) {
+      <div class="empty-message load-error">{{ loadError }}</div>
+    } @else if (isLoaded && !items.length) {
+      <div class="empty-message">No conversations yet</div>
+    }
+  </div>
+</div>
+
+<app-scroll-top [threshold]="1500" />
+
+<div class="progress-spinner">
+  @if (isBusy) {
+    <span class="loader"></span>
+  }
+</div>

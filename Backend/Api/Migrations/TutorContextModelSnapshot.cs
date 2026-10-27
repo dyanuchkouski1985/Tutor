@@ -17,10 +17,149 @@ namespace Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Api.Models.Conversation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AutoFormat")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Context")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Language")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastActivityDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("NextSpeakerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SendImmediately")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int?>("SummaryMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("UseLearningWords")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NextSpeakerId");
+
+                    b.HasIndex("UserId", "Language");
+
+                    b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("Api.Models.ConversationMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ValidationErrorsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ValidationStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ValidationSummary")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("ConversationMessages");
+                });
+
+            modelBuilder.Entity("Api.Models.ConversationParticipant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsUser")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Voice")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ConversationParticipants");
+                });
 
             modelBuilder.Entity("Api.Models.Picture", b =>
                 {
@@ -52,7 +191,7 @@ namespace Api.Migrations
 
                     b.HasIndex("WordId");
 
-                    b.ToTable("Pictures", (string)null);
+                    b.ToTable("Pictures");
                 });
 
             modelBuilder.Entity("Api.Models.Translation", b =>
@@ -73,7 +212,7 @@ namespace Api.Migrations
 
                     b.HasIndex("WordId");
 
-                    b.ToTable("Translations", (string)null);
+                    b.ToTable("Translations");
                 });
 
             modelBuilder.Entity("Api.Models.Usage", b =>
@@ -94,7 +233,141 @@ namespace Api.Migrations
 
                     b.HasIndex("WordId");
 
-                    b.ToTable("Usages", (string)null);
+                    b.ToTable("Usages");
+                });
+
+            modelBuilder.Entity("Api.Models.UserExerciseCompletion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Exercise")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Language")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Language", "Date", "Exercise")
+                        .IsUnique();
+
+                    b.ToTable("UserExerciseCompletions");
+                });
+
+            modelBuilder.Entity("Api.Models.UserLanguageSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Language")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Language")
+                        .IsUnique();
+
+                    b.ToTable("UserLanguageSettings");
+                });
+
+            modelBuilder.Entity("Api.Models.UserMistakeOccurrence", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Correction")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Explanation")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Fragment")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int?>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatternId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("PatternId");
+
+                    b.ToTable("UserMistakeOccurrences");
+                });
+
+            modelBuilder.Entity("Api.Models.UserMistakePattern", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Language")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastPracticeDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Rule")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Language", "Rule")
+                        .IsUnique();
+
+                    b.ToTable("UserMistakePatterns");
                 });
 
             modelBuilder.Entity("Api.Models.UserPicture", b =>
@@ -118,7 +391,7 @@ namespace Api.Migrations
 
                     b.HasIndex("PictureId");
 
-                    b.ToTable("UserPictures", (string)null);
+                    b.ToTable("UserPictures");
                 });
 
             modelBuilder.Entity("Api.Models.UserStatistic", b =>
@@ -129,8 +402,20 @@ namespace Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ArticlesPercentage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ConversationPercentage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CountabilityPercentage")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
+
+                    b.Property<bool>("HasRepeatHalfPoint")
+                        .HasColumnType("bit");
 
                     b.Property<int>("Language")
                         .HasColumnType("int");
@@ -141,9 +426,12 @@ namespace Api.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("VerbFormsPercentage")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.ToTable("UserStatistics", (string)null);
+                    b.ToTable("UserStatistics");
                 });
 
             modelBuilder.Entity("Api.Models.UserTranslation", b =>
@@ -167,7 +455,7 @@ namespace Api.Migrations
 
                     b.HasIndex("TranslationId");
 
-                    b.ToTable("UserTranslations", (string)null);
+                    b.ToTable("UserTranslations");
                 });
 
             modelBuilder.Entity("Api.Models.UserUsage", b =>
@@ -191,7 +479,7 @@ namespace Api.Migrations
 
                     b.HasIndex("UsageId");
 
-                    b.ToTable("UserUsages", (string)null);
+                    b.ToTable("UserUsages");
                 });
 
             modelBuilder.Entity("Api.Models.UserWordLearningProgress", b =>
@@ -221,7 +509,7 @@ namespace Api.Migrations
 
                     b.HasIndex("WordId");
 
-                    b.ToTable("UserWordLearningProgresses", (string)null);
+                    b.ToTable("UserWordLearningProgresses");
                 });
 
             modelBuilder.Entity("Api.Models.Word", b =>
@@ -249,12 +537,51 @@ namespace Api.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Words", (string)null);
+                    b.ToTable("Words");
+                });
+
+            modelBuilder.Entity("Api.Models.Conversation", b =>
+                {
+                    b.HasOne("Api.Models.ConversationParticipant", "NextSpeaker")
+                        .WithMany()
+                        .HasForeignKey("NextSpeakerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("NextSpeaker");
+                });
+
+            modelBuilder.Entity("Api.Models.ConversationMessage", b =>
+                {
+                    b.HasOne("Api.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Api.Models.ConversationParticipant", "Participant")
+                        .WithMany("Messages")
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Participant");
+                });
+
+            modelBuilder.Entity("Api.Models.ConversationParticipant", b =>
+                {
+                    b.HasOne("Api.Models.Conversation", "Conversation")
+                        .WithMany("Participants")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
                 });
 
             modelBuilder.Entity("Api.Models.Picture", b =>
@@ -288,6 +615,24 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Word");
+                });
+
+            modelBuilder.Entity("Api.Models.UserMistakeOccurrence", b =>
+                {
+                    b.HasOne("Api.Models.ConversationMessage", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Api.Models.UserMistakePattern", "Pattern")
+                        .WithMany("Occurrences")
+                        .HasForeignKey("PatternId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+
+                    b.Navigation("Pattern");
                 });
 
             modelBuilder.Entity("Api.Models.UserPicture", b =>
@@ -334,6 +679,18 @@ namespace Api.Migrations
                     b.Navigation("Word");
                 });
 
+            modelBuilder.Entity("Api.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+
+                    b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("Api.Models.ConversationParticipant", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("Api.Models.Picture", b =>
                 {
                     b.Navigation("UserPictures");
@@ -347,6 +704,11 @@ namespace Api.Migrations
             modelBuilder.Entity("Api.Models.Usage", b =>
                 {
                     b.Navigation("UserUsages");
+                });
+
+            modelBuilder.Entity("Api.Models.UserMistakePattern", b =>
+                {
+                    b.Navigation("Occurrences");
                 });
 
             modelBuilder.Entity("Api.Models.Word", b =>

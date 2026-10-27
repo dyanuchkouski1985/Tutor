@@ -45,6 +45,38 @@ export class StaticConfigService {
     return config.timer.showSeconds;
   }
 
+  get enableSpeechExercise() {
+    return config.speechExercise.enable;
+  }
+
+  get continuousRecording() {
+    return config.speechExercise.continuousRecording !== false;
+  }
+
+  get maxRecordingSeconds() {
+    return config.speechExercise.maxRecordingSeconds || 120;
+  }
+
+  get maxAlternatives() {
+    return config.speechExercise.maxAlternatives || 5;
+  }
+
+  get localRecognition() {
+    return config.speechExercise.localRecognition === true;
+  }
+
+  get browserSpeech() {
+    return config.speechExercise.browserSpeech === true;
+  }
+
+  get englishRecognitionTag() {
+    return config.speechExercise.recognitionLanguageTags?.english || 'en-GB';
+  }
+
+  get polishRecognitionTag() {
+    return config.speechExercise.recognitionLanguageTags?.polish || 'pl-PL';
+  }
+
   get events() {
     return config.events;
   }

@@ -10,7 +10,7 @@
         [stroke]="10"
         [rounded]="true"
         [duration]="1500"
-        />
+      />
     }
     @if (
       config.timer.enable &&
@@ -18,20 +18,16 @@
       !showAnswer &&
       questionIndex < tasks.length &&
       remainingTime > 0
-      ) {
-      <div
-        class="timer-seconds"
-        >
+    ) {
+      <div class="timer-seconds">
         {{ remainingTime }}
       </div>
     }
   </div>
   <div class="progressbar-container">
-    <p-progressBar [value]="(100 * questionIndex) / tasks.length">
-      <ng-template pTemplate="content" let-value>
-        <span>{{ questionIndex }}/{{ tasks.length }}</span>
-      </ng-template>
-    </p-progressBar>
+    <app-progress-bar [value]="(100 * questionIndex) / tasks.length"
+      ><span>{{ questionIndex }}/{{ tasks.length }}</span></app-progress-bar
+    >
     <div class="answers-history">
       @for (isCorrectAnswer of answersHistory; track isCorrectAnswer) {
         <span>
@@ -54,12 +50,11 @@
             </div>
             <input
               type="text"
-              pInputText
-              [pAutoFocus]="true"
-              class="answer-input"
+              appAutoFocus
+              class="ui-input answer-input"
               [(ngModel)]="answer"
               name="answer"
-              />
+            />
           </div>
         }
         @if (showAnswer) {
@@ -73,7 +68,7 @@
                 <img
                   [src]="'../assets/images/' + (isCorrectAnswer ? 'yes.png' : 'no.png')"
                   [class.dislike]="!isCorrectAnswer"
-                  />
+                />
               </div>
             </div>
           </div>
@@ -81,18 +76,14 @@
         <div class="buttons-container">
           <button
             type="submit"
-            pButton
-            pRipple
-            class="p-button-success"
+            class="ui-button ui-button-success"
             [disabled]="!showAnswer && !answer"
             #submitButton
-            >
+          >
             {{ showAnswer ? 'Next' : 'Answer' }}
           </button>
           @if (!showAnswer) {
-            <button type="button" pButton pRipple (click)="onDoNotKnow()">
-              Don't know
-            </button>
+            <button type="button" class="ui-button" (click)="onDoNotKnow()">Don't know</button>
           }
         </div>
       </div>

@@ -1,6 +1,4 @@
-import { Component, Input } from '@angular/core';
-
-import { ButtonModule } from 'primeng/button';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 export class FailedTask {
   constructor(
@@ -11,8 +9,9 @@ export class FailedTask {
 
 @Component({
   selector: 'app-result',
-  imports: [ButtonModule],
+  imports: [],
   templateUrl: './result.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./result.scss'],
 })
 export class ResultComponent {
